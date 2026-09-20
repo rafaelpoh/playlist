@@ -49,8 +49,17 @@ export function useWatchlist() {
       return;
     }
 
-    // Se estiver autenticado no Firebase, sincroniza em tempo real com Firestore
+    // Se estiver autenticado no Firebase, migra itens locais se houver e sincroniza em tempo real com Firestore
     setLoading(true);
+
+    const localItems = getLocalWatchlist();
+    if (localItems.length > 0) {
+      // Faz upload de itens que foram salvos antes do login para a nuvem
+      void Promise.allSettled(localItems.map((item) => saveToWatchlist(user.uid, item))).then(() => {
+        console.info('[Watchlist] Itens locais sincronizados com o Firestore com sucesso.');
+      });
+    }
+
     const unsubscribe = subscribeWatchlist(
       user.uid,
       (items) => {
