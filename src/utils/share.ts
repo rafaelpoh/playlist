@@ -4,7 +4,9 @@ import type { MediaItem } from '@/types/media';
  * Gera a URL compartilhável para um título específico.
  */
 export function generateShareUrl(item: MediaItem): string {
-  const url = new URL(window.location.href);
+  const origin = window.location.origin;
+  const pathname = window.location.pathname;
+  const url = new URL(origin + pathname);
   url.searchParams.set('id', item.id);
   url.searchParams.set('type', item.type);
   return url.toString();
@@ -33,17 +35,39 @@ export async function shareMediaItem(item: MediaItem): Promise<ShareResult> {
       await navigator.share(shareData);
       return { success: true, method: 'share', url: shareUrl };
     } catch (error: unknown) {
-      // Se o usuário cancelou o menu nativo, não faz fallback agressivo
       if (error instanceof Error && error.name === 'AbortError') {
         return { success: false, method: 'share', url: shareUrl };
       }
     }
   }
 
-  // Fallback para cópia na área de transferência
-  if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
-    await navigator.clipboard.writeText(shareUrl);
-    return { success: true, method: 'clipboard', url: shareUrl };
+  // Fallback 1: Clipboard API moderna
+  try {
+    if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(shareUrl);
+      return { success: true, method: 'clipboard', url: shareUrl };
+    }
+  } catch (clipboardError) {
+    console.warn('[Share] Falha na API navigator.clipboard, tentando fallback:', clipboardError);
+  }
+
+  // Fallback 2: ExecCommand legado para compatibilidade máxima e ambientes headless
+  try {
+    const textArea = document.createElement('textarea');
+    textArea.value = shareUrl;
+    textArea.style.position = 'fixed';
+    textArea.style.opacity = '0';
+    textArea.style.left = '-9999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    const successful = document.execCommand('copy');
+    document.body.removeChild(textArea);
+    if (successful) {
+      return { success: true, method: 'clipboard', url: shareUrl };
+    }
+  } catch (execError) {
+    console.warn('[Share] Falha no fallback execCommand:', execError);
   }
 
   return { success: false, method: 'clipboard', url: shareUrl };
