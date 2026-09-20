@@ -3,12 +3,12 @@ import { mapTmdbMovieToMediaItem } from '../types';
 import { buildYouTubeEmbedUrl } from '@/utils/security';
 import type { MediaItem, MovieCategory } from '@/types/media';
 
-const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY || '4470f5b73e6ecdfd6ba10fd320853bd0';
-const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
+// Rota de proxy protegida via Vercel Serverless / Vite Dev Middleware
+const TMDB_PROXY_BASE = '/api/tmdb';
 
 export async function fetchMoviesByCategory(category: MovieCategory): Promise<ReadonlyArray<MediaItem>> {
   const endpoint = category === 'now_playing' ? '/movie/now_playing' : '/movie/upcoming';
-  const url = `${TMDB_BASE_URL}${endpoint}?api_key=${TMDB_API_KEY}&language=pt-BR&page=1`;
+  const url = `${TMDB_PROXY_BASE}?path=${encodeURIComponent(endpoint)}&page=1`;
 
   const response = await fetch(url);
   if (!response.ok) {
@@ -24,7 +24,7 @@ export async function fetchMoviesByCategory(category: MovieCategory): Promise<Re
 }
 
 export async function searchMovies(query: string): Promise<ReadonlyArray<MediaItem>> {
-  const url = `${TMDB_BASE_URL}/search/movie?api_key=${TMDB_API_KEY}&language=pt-BR&query=${encodeURIComponent(query)}&page=1`;
+  const url = `${TMDB_PROXY_BASE}?path=/search/movie&query=${encodeURIComponent(query)}&page=1`;
 
   const response = await fetch(url);
   if (!response.ok) {
@@ -40,7 +40,7 @@ export async function searchMovies(query: string): Promise<ReadonlyArray<MediaIt
 }
 
 export async function fetchMovieById(movieId: number): Promise<MediaItem | null> {
-  const url = `${TMDB_BASE_URL}/movie/${movieId}?api_key=${TMDB_API_KEY}&language=pt-BR`;
+  const url = `${TMDB_PROXY_BASE}?path=/movie/${movieId}`;
 
   try {
     const response = await fetch(url);
@@ -56,7 +56,7 @@ export async function fetchMovieById(movieId: number): Promise<MediaItem | null>
 }
 
 export async function fetchMovieTrailer(movieId: number): Promise<string | null> {
-  const url = `${TMDB_BASE_URL}/movie/${movieId}/videos?api_key=${TMDB_API_KEY}&language=pt-BR`;
+  const url = `${TMDB_PROXY_BASE}?path=/movie/${movieId}/videos`;
 
   try {
     const response = await fetch(url);

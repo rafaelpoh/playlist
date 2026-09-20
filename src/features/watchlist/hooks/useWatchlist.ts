@@ -7,9 +7,32 @@ import {
 } from '../services/watchlistService';
 import type { MediaItem } from '@/types/media';
 
+const LOCAL_STORAGE_KEY = '@playlist/watchlist';
+
+function getLocalWatchlist(): MediaItem[] {
+  try {
+    const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+    return raw ? (JSON.parse(raw) as MediaItem[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function setLocalWatchlist(items: ReadonlyArray<MediaItem>): void {
+  try {
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(items));
+  } catch (error) {
+    console.warn('[Watchlist] Falha ao persistir no localStorage:', error);
+  }
+}
+
+export interface ToggleWatchlistResult {
+  readonly saved: boolean;
+}
+
 export function useWatchlist() {
   const { user } = useAuth();
-  const [watchlist, setWatchlist] = useState<ReadonlyArray<MediaItem>>([]);
+  const [watchlist, setWatchlist] = useState<ReadonlyArray<MediaItem>>(() => getLocalWatchlist());
   const [loading, setLoading] = useState<boolean>(true);
 
   // Conjunto para lookup instantâneo O(1) de itens salvos
@@ -18,23 +41,23 @@ export function useWatchlist() {
   }, [watchlist]);
 
   useEffect(() => {
-    if (!user) {
-      setWatchlist([]);
+    // Se não estiver logado com conta real (ou for visitante), usa os dados locais
+    if (!user || user.uid.startsWith('guest-')) {
+      const localItems = getLocalWatchlist();
+      setWatchlist(localItems);
       setLoading(false);
       return;
     }
 
-    if (user.uid.startsWith('guest-')) {
-      setLoading(false);
-      return;
-    }
-
+    // Se estiver autenticado no Firebase, sincroniza em tempo real com Firestore
     setLoading(true);
     const unsubscribe = subscribeWatchlist(
       user.uid,
       (items) => {
         setWatchlist(items);
         setLoading(false);
+        // Mantém backup local sincronizado
+        setLocalWatchlist(items);
       },
       () => {
         setLoading(false);
@@ -52,26 +75,33 @@ export function useWatchlist() {
   );
 
   const toggleWatchlist = useCallback(
-    async (item: MediaItem): Promise<boolean> => {
-      if (!user) {
-        return false; // Indica necessidade de login
+    async (item: MediaItem): Promise<ToggleWatchlistResult> => {
+      const currentlySaved = savedIds.has(item.id);
+      const nextSaved = !currentlySaved;
+
+      // 1. Atualiza estado em memória e localStorage imediatamente (resposta instantânea)
+      setWatchlist((prev) => {
+        const updated = currentlySaved
+          ? prev.filter((i) => i.id !== item.id)
+          : [item, ...prev];
+        setLocalWatchlist(updated);
+        return updated;
+      });
+
+      // 2. Se autenticado no Firestore com conta real, sincroniza na nuvem
+      if (user && !user.uid.startsWith('guest-')) {
+        try {
+          if (currentlySaved) {
+            await removeFromWatchlist(user.uid, item.id);
+          } else {
+            await saveToWatchlist(user.uid, item);
+          }
+        } catch (error) {
+          console.error('[Watchlist] Erro ao sincronizar com Firestore:', error);
+        }
       }
 
-      if (user.uid.startsWith('guest-')) {
-        setWatchlist((prev) =>
-          savedIds.has(item.id)
-            ? prev.filter((i) => i.id !== item.id)
-            : [item, ...prev]
-        );
-        return true;
-      }
-
-      if (savedIds.has(item.id)) {
-        await removeFromWatchlist(user.uid, item.id);
-      } else {
-        await saveToWatchlist(user.uid, item);
-      }
-      return true;
+      return { saved: nextSaved };
     },
     [user, savedIds]
   );

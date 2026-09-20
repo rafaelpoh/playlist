@@ -6,7 +6,6 @@ import { MediaGrid } from './components/MediaGrid/MediaGrid';
 import { TrailerModal } from './components/TrailerModal/TrailerModal';
 import { EmptyState } from './components/EmptyState/EmptyState';
 import { AuthProvider } from './features/auth/context/AuthContext';
-import { useAuth } from './features/auth/hooks/useAuth';
 import { AuthModal } from './features/auth/components/AuthModal/AuthModal';
 import { UserMenu } from './features/auth/components/UserMenu/UserMenu';
 import { useWatchlist } from './features/watchlist/hooks/useWatchlist';
@@ -33,7 +32,6 @@ const PlaylistMain: FC = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [authPrompt, setAuthPrompt] = useState<string | undefined>(undefined);
 
-  const { isAuthenticated } = useAuth();
   const { watchlist, watchlistCount, isSaved, toggleWatchlist, loading: watchlistLoading } = useWatchlist();
 
   // Features hooks
@@ -133,11 +131,13 @@ const PlaylistMain: FC = () => {
   }, [getMovieTrailer, getSerieTrailer, openTrailer]);
 
   const handleToggleWatchlist = useCallback(async (item: MediaItem) => {
-    const success = await toggleWatchlist(item);
-    if (!success) {
-      handleOpenAuthModal('Faça login ou continue como visitante para salvar títulos na sua lista!');
+    const { saved } = await toggleWatchlist(item);
+    if (saved) {
+      showToast(`"${item.title}" adicionado à sua lista! 🍿`, 'success');
+    } else {
+      showToast(`"${item.title}" removido da sua lista.`, 'info');
     }
-  }, [toggleWatchlist, handleOpenAuthModal]);
+  }, [toggleWatchlist, showToast]);
 
   const handleClearSearch = useCallback(() => {
     setSearchInput('');
@@ -249,18 +249,12 @@ const PlaylistMain: FC = () => {
         {/* Visualização: MINHA LISTA */}
         {activeTab === 'watchlist' && (
           <div className={styles.sectionsContainer}>
-            {!isAuthenticated ? (
-              <EmptyState
-                message="Faça login para salvar e gerenciar sua lista de filmes, séries e animes para assistir."
-                resetLabel="Entrar ou Criar Conta"
-                onReset={() => handleOpenAuthModal('Acesse sua conta para ver seus títulos salvos')}
-              />
-            ) : filteredWatchlist.length === 0 ? (
+            {filteredWatchlist.length === 0 ? (
               <EmptyState
                 message={
                   searchInput.trim()
                     ? `Nenhum título salvo corresponde a "${searchInput}".`
-                    : 'Sua lista para assistir está vazia. Adicione títulos clicando no ícone de salvar (marcador) nos cards!'
+                    : 'Sua lista para assistir está vazia. Adicione títulos clicando no ícone de salvar (marcador) nos cards ou no modal!'
                 }
                 resetLabel="Explorar Catálogo"
                 onReset={() => setActiveTab('all')}
@@ -407,6 +401,8 @@ const PlaylistMain: FC = () => {
         trailerInfo={trailerInfo}
         onClose={closeTrailer}
         onShare={handleShare}
+        isSaved={trailerInfo?.item ? isSaved(trailerInfo.item.id) : false}
+        onToggleWatchlist={handleToggleWatchlist}
       />
 
       {/* Modal de Autenticação */}

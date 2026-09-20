@@ -55,15 +55,14 @@ O projeto adota uma arquitetura orientada a domínios (**Feature-Driven & Coloca
 ├── package.json                 # Dependências e scripts
 ├── tsconfig.json                # Configurações estritas do TypeScript
 ├── vite.config.ts               # Configuração do Vite com aliases @/
+├── vercel.json                  # Roteamento SPA e headers de segurança na Vercel
 ├── firebase.json                # Configurações de deploy do Firebase
 ├── firestore.rules              # Regras de segurança do Cloud Firestore
 ├── .firebaserc                  # Vinculação ao projeto Firebase (playlist-app-2026)
 ├── .env.example                 # Modelo de variáveis de ambiente
 ├── .gitignore                   # Arquivos e pastas ignorados no versionamento
-├── /legacy                      # Projetos legados preservados para histórico
-│   ├── animelist/
-│   ├── movielist/
-│   └── serielist/
+├── /api                         # Serverless Functions da Vercel (BFF de proxy seguro)
+│   └── tmdb.ts
 ├── /public                      # Mídias e ícones estáticos
 └── /src
     ├── main.tsx                 # Inicialização do React (createRoot)
@@ -136,6 +135,34 @@ npm run preview
 
 ---
 
+## 🔒 Segurança de Chaves de API & Vercel Serverless
+
+Para garantir segurança total, a aplicação adota o padrão **BFF (Backend For Frontend)** utilizando **Serverless Edge Functions da Vercel**:
+
+- **Ocultação de Segredos**: A chave de API da TMDb (`TMDB_API_KEY`) nunca é incluída no código do cliente ou enviada ao navegador do usuário.
+- **Proxy Seguro (`api/tmdb.ts`)**: O cliente faz requisições exclusivamente para o endpoint interno `/api/tmdb?path=...`. A Edge Function injeta a chave no servidor e aplica cache na borda (`s-maxage=3600`), reduzindo a latência e o consumo de requisições externas.
+- **Ambiente Local**: No desenvolvimento com `npm run dev`, um middleware embutido no `vite.config.ts` emula o comportamento do servidor sem expor chaves no bundle.
+
+---
+
+## 🚀 Como Fazer o Deploy na Vercel
+
+1. **Importar o Projeto**: Conecte o repositório no painel da [Vercel](https://vercel.com).
+2. **Definir as Variáveis de Ambiente** em **Project Settings > Environment Variables**:
+   - `TMDB_API_KEY`: sua chave de API da TMDb.
+   - `VITE_FIREBASE_API_KEY`: sua chave web do Firebase.
+   - `VITE_FIREBASE_AUTH_DOMAIN`: domínio de auth do Firebase (`playlist-app-2026.firebaseapp.com`).
+   - `VITE_FIREBASE_PROJECT_ID`: ID do projeto (`playlist-app-2026`).
+   - `VITE_FIREBASE_STORAGE_BUCKET`: bucket do storage.
+   - `VITE_FIREBASE_MESSAGING_SENDER_ID`: ID do remetente.
+   - `VITE_FIREBASE_APP_ID`: ID da aplicação web.
+3. **Autorizar o Domínio no Firebase**:
+   - No [Firebase Console](https://console.firebase.google.com/), acesse **Authentication > Settings > Authorized domains**.
+   - Adicione o domínio gerado pela Vercel (ex: `seu-projeto.vercel.app`).
+4. **Deploy Automático**: Cada push na branch principal acionará o build de produção automaticamente com rotas e serverless functions configuradas via `vercel.json`.
+
+---
+
 ## 🔒 Segurança & Regras do Firestore
 
 O projeto utiliza regras estritas em `firestore.rules`, garantindo que cada usuário acesse exclusivamente seus próprios títulos na lista:
@@ -150,12 +177,3 @@ service cloud.firestore {
   }
 }
 ```
-
----
-
-## 📜 Histórico e Legado
-
-Os códigos-fonte dos protótipos iniciais desenvolvidos em Vanilla JavaScript foram organizados e preservados no diretório [`/legacy`](./legacy):
-- `legacy/movielist`: Protótipo inicial de listagem de filmes.
-- `legacy/serielist`: Protótipo inicial de listagem de séries.
-- `legacy/animelist`: Protótipo inicial de consulta à API Jikan.

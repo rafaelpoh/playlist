@@ -106,18 +106,6 @@ export const MediaCard: FC<MediaCardProps> = memo(({
                 <Share2 size={13} />
               </button>
             )}
-
-            {onToggleWatchlist && (
-              <button
-                type="button"
-                className={`${styles.bookmarkBtn} ${isSaved ? styles.bookmarkActive : ''}`}
-                onClick={handleBookmarkClick}
-                title={isSaved ? 'Remover da minha lista' : 'Salvar para assistir'}
-                aria-label={isSaved ? 'Remover da minha lista' : 'Salvar para assistir'}
-              >
-                <Bookmark size={14} fill={isSaved ? 'currentColor' : 'none'} />
-              </button>
-            )}
           </div>
         </div>
 

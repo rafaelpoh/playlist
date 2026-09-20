@@ -1,5 +1,5 @@
 import { FC, memo, MouseEvent } from 'react';
-import { X, AlertCircle, Share2 } from 'lucide-react';
+import { X, AlertCircle, Share2, Bookmark } from 'lucide-react';
 import type { TrailerInfo, MediaItem } from '@/types/media';
 import styles from './TrailerModal.module.css';
 
@@ -8,6 +8,8 @@ export interface TrailerModalProps {
   readonly trailerInfo: TrailerInfo | null;
   readonly onClose: () => void;
   readonly onShare?: (item: MediaItem) => void;
+  readonly isSaved?: boolean;
+  readonly onToggleWatchlist?: (item: MediaItem) => void;
 }
 
 export const TrailerModal: FC<TrailerModalProps> = memo(({
@@ -15,6 +17,8 @@ export const TrailerModal: FC<TrailerModalProps> = memo(({
   trailerInfo,
   onClose,
   onShare,
+  isSaved = false,
+  onToggleWatchlist,
 }) => {
   if (!isOpen || !trailerInfo) return null;
 
@@ -39,6 +43,19 @@ export const TrailerModal: FC<TrailerModalProps> = memo(({
             {trailerInfo.title}
           </h2>
           <div className={styles.headerActions}>
+            {trailerInfo.item && onToggleWatchlist && (
+              <button
+                type="button"
+                className={`${styles.modalBookmarkButton} ${isSaved ? styles.modalBookmarkActive : ''}`}
+                onClick={() => onToggleWatchlist(trailerInfo.item!)}
+                aria-label={isSaved ? 'Remover da minha lista' : 'Salvar na lista'}
+                title={isSaved ? 'Remover da minha lista' : 'Salvar na lista'}
+              >
+                <Bookmark size={16} fill={isSaved ? 'currentColor' : 'none'} />
+                <span>{isSaved ? 'Na sua lista' : 'Salvar'}</span>
+              </button>
+            )}
+
             {trailerInfo.item && onShare && (
               <button
                 type="button"

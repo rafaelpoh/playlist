@@ -3,12 +3,12 @@ import { mapTmdbSerieToMediaItem } from '../types';
 import { buildYouTubeEmbedUrl } from '@/utils/security';
 import type { MediaItem, SerieCategory } from '@/types/media';
 
-const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY || '4470f5b73e6ecdfd6ba10fd320853bd0';
-const TMDB_BASE_URL = 'https://api.themoviedb.org/3';
+// Rota de proxy protegida via Vercel Serverless / Vite Dev Middleware
+const TMDB_PROXY_BASE = '/api/tmdb';
 
 export async function fetchSeriesByCategory(category: SerieCategory): Promise<ReadonlyArray<MediaItem>> {
   const endpoint = category === 'on_the_air' ? '/tv/on_the_air' : '/tv/popular';
-  const url = `${TMDB_BASE_URL}${endpoint}?api_key=${TMDB_API_KEY}&language=pt-BR&page=1`;
+  const url = `${TMDB_PROXY_BASE}?path=${encodeURIComponent(endpoint)}&page=1`;
 
   const response = await fetch(url);
   if (!response.ok) {
@@ -24,7 +24,7 @@ export async function fetchSeriesByCategory(category: SerieCategory): Promise<Re
 }
 
 export async function searchSeries(query: string): Promise<ReadonlyArray<MediaItem>> {
-  const url = `${TMDB_BASE_URL}/search/tv?api_key=${TMDB_API_KEY}&language=pt-BR&query=${encodeURIComponent(query)}&page=1`;
+  const url = `${TMDB_PROXY_BASE}?path=/search/tv&query=${encodeURIComponent(query)}&page=1`;
 
   const response = await fetch(url);
   if (!response.ok) {
@@ -40,7 +40,7 @@ export async function searchSeries(query: string): Promise<ReadonlyArray<MediaIt
 }
 
 export async function fetchSerieById(serieId: number): Promise<MediaItem | null> {
-  const url = `${TMDB_BASE_URL}/tv/${serieId}?api_key=${TMDB_API_KEY}&language=pt-BR`;
+  const url = `${TMDB_PROXY_BASE}?path=/tv/${serieId}`;
 
   try {
     const response = await fetch(url);
@@ -56,7 +56,7 @@ export async function fetchSerieById(serieId: number): Promise<MediaItem | null>
 }
 
 export async function fetchSerieTrailer(serieId: number): Promise<string | null> {
-  const url = `${TMDB_BASE_URL}/tv/${serieId}/videos?api_key=${TMDB_API_KEY}&language=pt-BR`;
+  const url = `${TMDB_PROXY_BASE}?path=/tv/${serieId}/videos`;
 
   try {
     const response = await fetch(url);
