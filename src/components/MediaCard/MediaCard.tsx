@@ -1,5 +1,5 @@
 import { FC, memo, useState, KeyboardEvent, MouseEvent } from 'react';
-import { Star, Play, Film, Tv, Flame, ImageOff, Bookmark } from 'lucide-react';
+import { Star, Play, Film, Tv, Flame, ImageOff, Bookmark, Share2 } from 'lucide-react';
 import type { MediaItem } from '@/types/media';
 import { formatScore, formatReleaseYear, truncateText } from '@/utils/formatters';
 import styles from './MediaCard.module.css';
@@ -10,6 +10,7 @@ export interface MediaCardProps {
   readonly isTrailerLoading?: boolean;
   readonly isSaved?: boolean;
   readonly onToggleWatchlist?: (item: MediaItem) => void;
+  readonly onShare?: (item: MediaItem) => void;
 }
 
 const TYPE_CONFIG = {
@@ -24,6 +25,7 @@ export const MediaCard: FC<MediaCardProps> = memo(({
   isTrailerLoading = false,
   isSaved = false,
   onToggleWatchlist,
+  onShare,
 }) => {
   const [imgError, setImgError] = useState<boolean>(false);
   const typeConfig = TYPE_CONFIG[item.type];
@@ -45,6 +47,11 @@ export const MediaCard: FC<MediaCardProps> = memo(({
   const handleBookmarkClick = (e: MouseEvent) => {
     e.stopPropagation();
     onToggleWatchlist?.(item);
+  };
+
+  const handleShareClick = (e: MouseEvent) => {
+    e.stopPropagation();
+    onShare?.(item);
   };
 
   return (
@@ -88,6 +95,18 @@ export const MediaCard: FC<MediaCardProps> = memo(({
               </span>
             )}
 
+            {onShare && (
+              <button
+                type="button"
+                className={styles.shareBtn}
+                onClick={handleShareClick}
+                title="Compartilhar título"
+                aria-label="Compartilhar título"
+              >
+                <Share2 size={13} />
+              </button>
+            )}
+
             {onToggleWatchlist && (
               <button
                 type="button"
@@ -122,6 +141,18 @@ export const MediaCard: FC<MediaCardProps> = memo(({
                 <Play size={16} fill="currentColor" />
                 <span>{isTrailerLoading ? 'Carregando...' : 'Assistir Trailer'}</span>
               </button>
+
+              {onShare && (
+                <button
+                  type="button"
+                  className={styles.overlayShareBtn}
+                  onClick={handleShareClick}
+                  title="Compartilhar título"
+                  aria-label="Compartilhar título"
+                >
+                  <Share2 size={15} />
+                </button>
+              )}
 
               {onToggleWatchlist && (
                 <button

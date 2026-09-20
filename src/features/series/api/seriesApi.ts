@@ -1,4 +1,4 @@
-import { TmdbSeriesResponseSchema, TmdbSerieVideosResponseSchema } from '../schemas/seriesSchema';
+import { TmdbSeriesResponseSchema, TmdbSerieVideosResponseSchema, TmdbSerieSchema } from '../schemas/seriesSchema';
 import { mapTmdbSerieToMediaItem } from '../types';
 import { buildYouTubeEmbedUrl } from '@/utils/security';
 import type { MediaItem, SerieCategory } from '@/types/media';
@@ -37,6 +37,22 @@ export async function searchSeries(query: string): Promise<ReadonlyArray<MediaIt
   return parsed.results
     .filter((s) => Boolean(s.poster_path))
     .map(mapTmdbSerieToMediaItem);
+}
+
+export async function fetchSerieById(serieId: number): Promise<MediaItem | null> {
+  const url = `${TMDB_BASE_URL}/tv/${serieId}?api_key=${TMDB_API_KEY}&language=pt-BR`;
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) return null;
+
+    const json = await response.json();
+    const parsed = TmdbSerieSchema.parse(json);
+    return mapTmdbSerieToMediaItem(parsed);
+  } catch (error) {
+    console.warn(`[SeriesApi] Erro ao buscar série por ID ${serieId}:`, error);
+    return null;
+  }
 }
 
 export async function fetchSerieTrailer(serieId: number): Promise<string | null> {

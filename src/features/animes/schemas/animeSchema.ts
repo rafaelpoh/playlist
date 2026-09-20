@@ -29,5 +29,10 @@ export const JikanAnimeResponseSchema = z.object({
   data: z.array(JikanAnimeSchema).default([]),
 });
 
+export const JikanSingleAnimeResponseSchema = z.object({
+  data: JikanAnimeSchema,
+});
+
 export type JikanAnime = z.infer<typeof JikanAnimeSchema>;
 export type JikanAnimeResponse = z.infer<typeof JikanAnimeResponseSchema>;
+export type JikanSingleAnimeResponse = z.infer<typeof JikanSingleAnimeResponseSchema>;

@@ -15,6 +15,10 @@ import { useSeries } from './features/series/hooks/useSeries';
 import { useAnimes } from './features/animes/hooks/useAnimes';
 import { useTrailerModal } from './hooks/useTrailerModal';
 import { useDebounce } from './hooks/useDebounce';
+import { useToast } from './hooks/useToast';
+import { useDeepLink } from './hooks/useDeepLink';
+import { Toast } from './components/Toast/Toast';
+import { shareMediaItem } from './utils/share';
 import type { MediaTypeFilter, MediaItem } from './types/media';
 import styles from './App.module.css';
 
@@ -65,8 +69,34 @@ const PlaylistMain: FC = () => {
     refreshAnimes,
   } = useAnimes();
 
+  // Toast notifications hook
+  const { toast, showToast, hideToast } = useToast();
+
   // Modal hook
   const { isOpen, trailerInfo, openTrailer, closeTrailer } = useTrailerModal();
+
+  // Intercepta títulos compartilhados via link direto (?id=...&type=...)
+  useDeepLink({
+    onOpenMedia: (trailerUrl, title, item) => {
+      openTrailer(trailerUrl, title, item);
+    },
+    onNotify: (message, type) => {
+      showToast(message, type);
+    },
+  });
+
+  const handleShare = useCallback(async (item: MediaItem) => {
+    const result = await shareMediaItem(item);
+    if (result.success) {
+      if (result.method === 'share') {
+        showToast('Compartilhado com sucesso! 🚀', 'success');
+      } else {
+        showToast('Link copiado para a área de transferência! 🎉', 'success');
+      }
+    } else {
+      showToast('Não foi possível copiar o link. Verifique as permissões.', 'error');
+    }
+  }, [showToast]);
 
   // Atualiza busca sincronizada nas features ativas
   useEffect(() => {
@@ -90,24 +120,12 @@ const PlaylistMain: FC = () => {
     try {
       if (item.type === 'movie') {
         const trailerUrl = await getMovieTrailer(item.id);
-        if (trailerUrl) {
-          openTrailer(trailerUrl, item.title);
-        } else {
-          openTrailer('', item.title);
-        }
+        openTrailer(trailerUrl || '', item.title, item);
       } else if (item.type === 'serie') {
         const trailerUrl = await getSerieTrailer(item.id);
-        if (trailerUrl) {
-          openTrailer(trailerUrl, item.title);
-        } else {
-          openTrailer('', item.title);
-        }
+        openTrailer(trailerUrl || '', item.title, item);
       } else if (item.type === 'anime') {
-        if (item.trailerUrl) {
-          openTrailer(item.trailerUrl, item.title);
-        } else {
-          openTrailer('', item.title);
-        }
+        openTrailer(item.trailerUrl || '', item.title, item);
       }
     } finally {
       setLoadingTrailerId(null);
@@ -257,6 +275,7 @@ const PlaylistMain: FC = () => {
                 count={filteredWatchlist.length}
                 isSaved={isSaved}
                 onToggleWatchlist={handleToggleWatchlist}
+                onShare={handleShare}
               />
             )}
           </div>
@@ -275,6 +294,7 @@ const PlaylistMain: FC = () => {
                 count={movies.length}
                 isSaved={isSaved}
                 onToggleWatchlist={handleToggleWatchlist}
+                onShare={handleShare}
               />
             )}
 
@@ -288,6 +308,7 @@ const PlaylistMain: FC = () => {
                 count={series.length}
                 isSaved={isSaved}
                 onToggleWatchlist={handleToggleWatchlist}
+                onShare={handleShare}
               />
             )}
 
@@ -301,6 +322,7 @@ const PlaylistMain: FC = () => {
                 count={animes.length}
                 isSaved={isSaved}
                 onToggleWatchlist={handleToggleWatchlist}
+                onShare={handleShare}
               />
             )}
           </div>
@@ -323,6 +345,7 @@ const PlaylistMain: FC = () => {
             count={movies.length}
             isSaved={isSaved}
             onToggleWatchlist={handleToggleWatchlist}
+            onShare={handleShare}
           />
         )}
 
@@ -343,6 +366,7 @@ const PlaylistMain: FC = () => {
             count={series.length}
             isSaved={isSaved}
             onToggleWatchlist={handleToggleWatchlist}
+            onShare={handleShare}
           />
         )}
 
@@ -363,6 +387,7 @@ const PlaylistMain: FC = () => {
             count={animes.length}
             isSaved={isSaved}
             onToggleWatchlist={handleToggleWatchlist}
+            onShare={handleShare}
           />
         )}
       </main>
@@ -381,6 +406,7 @@ const PlaylistMain: FC = () => {
         isOpen={isOpen}
         trailerInfo={trailerInfo}
         onClose={closeTrailer}
+        onShare={handleShare}
       />
 
       {/* Modal de Autenticação */}
@@ -389,6 +415,9 @@ const PlaylistMain: FC = () => {
         onClose={handleCloseAuthModal}
         initialPrompt={authPrompt}
       />
+
+      {/* Notificação Toast */}
+      <Toast toast={toast} onDismiss={hideToast} />
     </div>
   );
 };

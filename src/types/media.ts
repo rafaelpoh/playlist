@@ -9,6 +9,7 @@ export type AnimeCategory = 'now' | 'popular';
 export interface TrailerInfo {
   readonly url: string;
   readonly title: string;
+  readonly item?: MediaItem;
 }
 
 export interface MediaItem {

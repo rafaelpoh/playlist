@@ -1,11 +1,11 @@
 import { useState, useCallback, useEffect } from 'react';
-import type { TrailerInfo } from '@/types/media';
+import type { TrailerInfo, MediaItem } from '@/types/media';
 
 export function useTrailerModal() {
   const [trailerInfo, setTrailerInfo] = useState<TrailerInfo | null>(null);
 
-  const openTrailer = useCallback((url: string, title: string) => {
-    setTrailerInfo({ url, title });
+  const openTrailer = useCallback((url: string, title: string, item?: MediaItem) => {
+    setTrailerInfo({ url, title, item });
   }, []);
 
   const closeTrailer = useCallback(() => {

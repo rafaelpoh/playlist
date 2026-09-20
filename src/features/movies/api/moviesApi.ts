@@ -1,4 +1,4 @@
-import { TmdbMoviesResponseSchema, TmdbVideosResponseSchema } from '../schemas/movieSchema';
+import { TmdbMoviesResponseSchema, TmdbVideosResponseSchema, TmdbMovieSchema } from '../schemas/movieSchema';
 import { mapTmdbMovieToMediaItem } from '../types';
 import { buildYouTubeEmbedUrl } from '@/utils/security';
 import type { MediaItem, MovieCategory } from '@/types/media';
@@ -37,6 +37,22 @@ export async function searchMovies(query: string): Promise<ReadonlyArray<MediaIt
   return parsed.results
     .filter((m) => Boolean(m.poster_path))
     .map(mapTmdbMovieToMediaItem);
+}
+
+export async function fetchMovieById(movieId: number): Promise<MediaItem | null> {
+  const url = `${TMDB_BASE_URL}/movie/${movieId}?api_key=${TMDB_API_KEY}&language=pt-BR`;
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) return null;
+
+    const json = await response.json();
+    const parsed = TmdbMovieSchema.parse(json);
+    return mapTmdbMovieToMediaItem(parsed);
+  } catch (error) {
+    console.warn(`[MovieApi] Erro ao buscar filme por ID ${movieId}:`, error);
+    return null;
+  }
 }
 
 export async function fetchMovieTrailer(movieId: number): Promise<string | null> {

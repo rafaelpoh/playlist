@@ -13,6 +13,7 @@ export interface MediaGridProps {
   readonly count?: number;
   readonly isSaved?: (mediaId: string) => boolean;
   readonly onToggleWatchlist?: (item: MediaItem) => void;
+  readonly onShare?: (item: MediaItem) => void;
 }
 
 const SKELETON_COUNT = 10;
@@ -26,6 +27,7 @@ export const MediaGrid: FC<MediaGridProps> = memo(({
   count,
   isSaved,
   onToggleWatchlist,
+  onShare,
 }) => {
   return (
     <section className={styles.section} aria-label={title}>
@@ -52,6 +54,7 @@ export const MediaGrid: FC<MediaGridProps> = memo(({
                 isTrailerLoading={loadingTrailerId === item.id}
                 isSaved={isSaved?.(item.id)}
                 onToggleWatchlist={onToggleWatchlist}
+                onShare={onShare}
               />
             ))}
       </div>

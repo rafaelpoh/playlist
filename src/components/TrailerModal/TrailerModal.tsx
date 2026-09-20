@@ -1,18 +1,20 @@
 import { FC, memo, MouseEvent } from 'react';
-import { X, AlertCircle } from 'lucide-react';
-import type { TrailerInfo } from '@/types/media';
+import { X, AlertCircle, Share2 } from 'lucide-react';
+import type { TrailerInfo, MediaItem } from '@/types/media';
 import styles from './TrailerModal.module.css';
 
 export interface TrailerModalProps {
   readonly isOpen: boolean;
   readonly trailerInfo: TrailerInfo | null;
   readonly onClose: () => void;
+  readonly onShare?: (item: MediaItem) => void;
 }
 
 export const TrailerModal: FC<TrailerModalProps> = memo(({
   isOpen,
   trailerInfo,
   onClose,
+  onShare,
 }) => {
   if (!isOpen || !trailerInfo) return null;
 
@@ -36,14 +38,28 @@ export const TrailerModal: FC<TrailerModalProps> = memo(({
           <h2 id="trailer-modal-title" className={styles.modalTitle}>
             {trailerInfo.title}
           </h2>
-          <button
-            type="button"
-            className={styles.closeButton}
-            onClick={onClose}
-            aria-label="Fechar trailer"
-          >
-            <X size={20} />
-          </button>
+          <div className={styles.headerActions}>
+            {trailerInfo.item && onShare && (
+              <button
+                type="button"
+                className={styles.modalShareButton}
+                onClick={() => onShare(trailerInfo.item!)}
+                aria-label="Compartilhar título"
+                title="Compartilhar título"
+              >
+                <Share2 size={16} />
+                <span>Compartilhar</span>
+              </button>
+            )}
+            <button
+              type="button"
+              className={styles.closeButton}
+              onClick={onClose}
+              aria-label="Fechar trailer"
+            >
+              <X size={20} />
+            </button>
+          </div>
         </div>
 
         {/* Container do Iframe / Vídeo */}

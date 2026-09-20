@@ -1,4 +1,4 @@
-import { JikanAnimeResponseSchema } from '../schemas/animeSchema';
+import { JikanAnimeResponseSchema, JikanSingleAnimeResponseSchema } from '../schemas/animeSchema';
 import { mapJikanAnimeToMediaItem } from '../types';
 import type { MediaItem, AnimeCategory } from '@/types/media';
 
@@ -35,4 +35,20 @@ export async function searchAnimes(query: string): Promise<ReadonlyArray<MediaIt
   return parsed.data
     .filter((a) => Boolean(a.images?.webp?.image_url || a.images?.jpg?.image_url))
     .map(mapJikanAnimeToMediaItem);
+}
+
+export async function fetchAnimeById(animeId: number): Promise<MediaItem | null> {
+  const url = `${JIKAN_BASE_URL}/anime/${animeId}`;
+
+  try {
+    const response = await fetch(url);
+    if (!response.ok) return null;
+
+    const json = await response.json();
+    const parsed = JikanSingleAnimeResponseSchema.parse(json);
+    return mapJikanAnimeToMediaItem(parsed.data);
+  } catch (error) {
+    console.warn(`[AnimeApi] Erro ao buscar anime por ID ${animeId}:`, error);
+    return null;
+  }
 }
