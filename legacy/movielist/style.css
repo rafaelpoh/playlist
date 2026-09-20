@@ -1,0 +1,151 @@
+/* Estilos Globais */
+body {
+    background-color: #141414;
+    color: #ffffff;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background-color: #202020;
+    padding: 20px;
+    border-bottom: 1px solid #303030;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+h1 {
+    margin: 0;
+    font-size: 2.5em;
+}
+
+.logo-container {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-direction: row;
+}
+
+.logo {
+    height: 3rem;
+    margin-right: 0;
+}
+
+#search-form {
+    display: flex;
+}
+
+#search-input {
+    background-color: #333;
+    border: 1px solid #555;
+    border-radius: 4px 0 0 4px;
+    color: #fff;
+    padding: 10px;
+    font-size: 1em;
+    outline: none;
+}
+
+#search-form button {
+    background-color: #e50914;
+    border: none;
+    border-radius: 0 4px 4px 0;
+    color: #fff;
+    cursor: pointer;
+    padding: 10px 15px;
+    font-size: 1em;
+}
+
+.movie-category {
+    margin-bottom: 40px;
+}
+
+.movie-category h2 {
+    font-size: 1.8em;
+    margin-left: 25px;
+    border-left: 4px solid #e50914; /* Cor de destaque similar à Netflix */
+    padding-left: 10px;
+}
+
+/* Container de Filmes */
+.movie-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 25px;
+    padding: 25px;
+    justify-content: center;
+}
+
+/* Cartão de Filme */
+.movie-card {
+    background-color: #1c1c1c;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease-in-out;
+    cursor: pointer;
+}
+
+.movie-card:hover {
+    transform: scale(1.05);
+}
+
+.movie-card img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.movie-card-info {
+    padding: 15px;
+}
+
+.movie-title {
+    font-size: 1em;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Estilos do Modal */
+.modal {
+    display: none; /* Oculto por padrão */
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.85);
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    position: relative;
+    width: 80%;
+    max-width: 900px;
+}
+
+#trailer-iframe {
+    width: 100%;
+    height: 85vh; /* Usa a altura da viewport para ser responsivo */
+    border: none;
+}
+
+.close-button {
+    position: absolute;
+    top: -30px;
+    right: 0;
+    color: #fff;
+    font-size: 35px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: color 0.3s;
+}
+
+.close-button:hover {
+    color: #bbb;
+}

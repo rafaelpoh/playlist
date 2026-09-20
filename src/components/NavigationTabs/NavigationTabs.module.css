@@ -1,0 +1,115 @@
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  align-items: center;
+  width: 100%;
+}
+
+.mainTabs {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  background-color: var(--color-bg-card);
+  padding: 4px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border-subtle);
+  overflow-x: auto;
+  max-width: 100%;
+  scrollbar-width: none;
+}
+
+.mainTabs::-webkit-scrollbar {
+  display: none;
+}
+
+.tabBtn {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-xs) var(--spacing-md);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.tabBtn:hover {
+  color: var(--color-text-primary);
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.tabActive {
+  background: var(--gradient-brand);
+  color: #ffffff !important;
+  box-shadow: 0 2px 10px rgba(56, 189, 248, 0.3);
+}
+
+.tabActiveMovie {
+  background-color: var(--color-movie-accent) !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 10px var(--color-movie-glow);
+}
+
+.tabActiveSerie {
+  background-color: var(--color-serie-accent) !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 10px var(--color-serie-glow);
+}
+
+.tabActiveAnime {
+  background-color: var(--color-anime-accent) !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 10px var(--color-anime-glow);
+}
+
+.tabActiveWatchlist {
+  background-color: var(--color-brand-primary) !important;
+  color: #ffffff !important;
+  box-shadow: 0 2px 10px rgba(56, 189, 248, 0.4);
+}
+
+.tabBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: var(--radius-full);
+  font-size: 11px;
+  font-weight: 700;
+  background-color: rgba(255, 255, 255, 0.2);
+  color: #ffffff;
+  margin-left: 4px;
+}
+
+/* Sub-filtros */
+.subFilterGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+.subFilterBtn {
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  padding: 4px var(--spacing-sm);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-muted);
+  background: transparent;
+  border: 1px solid transparent;
+  transition: all var(--transition-fast);
+}
+
+.subFilterBtn:hover {
+  color: var(--color-text-secondary);
+}
+
+.subFilterActive {
+  color: var(--color-text-primary) !important;
+  background-color: var(--color-bg-surface);
+  border-color: var(--color-border-medium);
+}

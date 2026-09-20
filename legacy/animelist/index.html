@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="assets/logo.png" type="image/x-icon">
+    <title>Anime Trailer Hub</title>
+    <!-- CRÍTICO: Ordem de carregamento dos estilos conforme spec.md -->
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/var.css">
+    <link rel="stylesheet" href="css/skin.css">
+    <!-- Scripts: defer para não bloquear a renderização -->
+    <script type="module" src="js/main.js" defer></script>
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <h1>Anime Hub</h1>
+            <img src="assets/logo.png" alt="Logo Anime Trailer Hub" class="logo">
+        </div>
+        <form id="search-form">
+            <label for="search-input" style="display: none;">Buscar animes</label>
+            <input type="text" id="search-input" placeholder="Buscar animes...">
+            <button type="submit">Buscar</button>
+        </form>
+    </header>
+    <main>
+        <section class="anime-category">
+            <h2 id="category-title">Temporada Atual</h2>
+            <div id="anime-container" class="anime-grid">
+                <!-- Loader placeholder -->
+                <div class="loader-container"><div class="loader"></div></div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal para o Trailer (Opção A) -->
+    <div id="trailer-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" id="close-modal">&times;</span>
+            <div id="trailer-container">
+                <!-- Iframe será injetado dinamicamente aqui -->
+            </div>
+        </div>
+    </div>
+</body>
+</html>

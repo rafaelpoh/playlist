@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="shortcut icon" href="serieslist1.jpg" type="image/x-icon">
+    <title>SerieList</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <div class="logo-container">
+            <h1>SerieList</h1>
+            <img src="serieslist2.jpg" alt="Logo SerieList" class="logo">
+        </div>
+        <form id="search-form">
+            <input type="text" id="search-input" placeholder="Buscar séries...">
+            <button type="submit">Buscar</button>
+        </form>
+    </header>
+    <main>
+        <!-- As seções de séries serão inseridas aqui dinamicamente pelo script.js -->
+    </main>
+    <!-- Modal para o Trailer -->
+    <div id="trailer-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button">&times;</span>
+            <iframe id="trailer-iframe" width="560" height="315" src="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

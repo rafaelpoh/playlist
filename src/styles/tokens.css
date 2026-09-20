@@ -1,0 +1,89 @@
+:root {
+  /* Cores Base e Superfícies (Modo Escuro Cinemático Impeccable) */
+  --color-bg-base: #070a12;
+  --color-bg-surface: #0e1424;
+  --color-bg-surface-translucent: rgba(14, 20, 36, 0.8);
+  --color-bg-card: #141c30;
+  --color-bg-card-hover: #1b2642;
+  --color-bg-overlay: rgba(5, 8, 15, 0.85);
+
+  /* Bordas */
+  --color-border-subtle: rgba(255, 255, 255, 0.08);
+  --color-border-medium: rgba(255, 255, 255, 0.15);
+  --color-border-glow: rgba(56, 189, 248, 0.4);
+
+  /* Tipografia & Cores de Texto */
+  --color-text-primary: #f8fafc;
+  --color-text-secondary: #94a3b8;
+  --color-text-muted: #64748b;
+  --color-text-inverted: #070a12;
+
+  /* Acentos de Marca e Mídias */
+  --color-brand-primary: #38bdf8;
+  --color-brand-secondary: #6366f1;
+  --gradient-brand: linear-gradient(135deg, #38bdf8 0%, #6366f1 50%, #f43f5e 100%);
+  --gradient-card-overlay: linear-gradient(180deg, rgba(7, 10, 18, 0) 0%, rgba(7, 10, 18, 0.8) 50%, rgba(7, 10, 18, 0.98) 100%);
+
+  /* Filmes (Acento Rosa/Vermelho Vibrante) */
+  --color-movie-accent: #f43f5e;
+  --color-movie-glow: rgba(244, 63, 94, 0.25);
+
+  /* Séries (Acento Violeta/Índigo Elétrico) */
+  --color-serie-accent: #8b5cf6;
+  --color-serie-glow: rgba(139, 92, 246, 0.25);
+
+  /* Animes (Acento Laranja Solar) */
+  --color-anime-accent: #f97316;
+  --color-anime-glow: rgba(249, 115, 22, 0.25);
+
+  /* Elementos de Destaque */
+  --color-star-gold: #f59e0b;
+  --color-error: #ef4444;
+
+  /* Fontes */
+  --font-family-body: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-family-display: 'Outfit', 'Inter', system-ui, -apple-system, sans-serif;
+
+  /* Escala de Tipografia */
+  --font-size-xs: 0.75rem;     /* 12px */
+  --font-size-sm: 0.875rem;    /* 14px */
+  --font-size-base: 1rem;      /* 16px */
+  --font-size-lg: 1.125rem;    /* 18px */
+  --font-size-xl: 1.25rem;     /* 20px */
+  --font-size-2xl: 1.5rem;     /* 24px */
+  --font-size-3xl: 2rem;       /* 32px */
+  --font-size-4xl: 2.5rem;     /* 40px */
+
+  /* Espaçamentos */
+  --spacing-xs: 4px;
+  --spacing-sm: 8px;
+  --spacing-md: 16px;
+  --spacing-lg: 24px;
+  --spacing-xl: 32px;
+  --spacing-2xl: 48px;
+  --spacing-3xl: 64px;
+
+  /* Raios de Borda */
+  --radius-xs: 4px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-full: 9999px;
+
+  /* Sombras e Elevação */
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.35);
+  --shadow-lg: 0 12px 32px rgba(0, 0, 0, 0.5);
+  --shadow-glow-movie: 0 0 20px var(--color-movie-glow);
+  --shadow-glow-serie: 0 0 20px var(--color-serie-glow);
+  --shadow-glow-anime: 0 0 20px var(--color-anime-glow);
+
+  /* Transições Suaves */
+  --transition-fast: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-normal: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Layout */
+  --max-width-content: 1360px;
+}
