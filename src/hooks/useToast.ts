@@ -8,7 +8,7 @@ export interface ToastState {
   readonly id: number;
 }
 
-export function useToast(defaultDurationMs: number = 3000) {
+export function useToast(defaultDurationMs: number = 4000) {
   const [toast, setToast] = useState<ToastState | null>(null);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
