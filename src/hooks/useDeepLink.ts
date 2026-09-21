@@ -26,7 +26,9 @@ export function useDeepLink({ onOpenMedia, onNotify }: UseDeepLinkOptions): void
     const validTypes: ReadonlyArray<MediaType> = ['movie', 'serie', 'anime'];
     if (!validTypes.includes(typeParam)) return;
 
-    const numericId = parseInt(idParam, 10);
+    // Sanitiza o ID removendo prefixos caso existam (ex: "movie-550" -> "550")
+    const cleanId = idParam.replace(/^(movie|serie|anime)-/, '');
+    const numericId = parseInt(cleanId, 10);
     if (isNaN(numericId)) return;
 
     const resolveDeepLink = async () => {
@@ -54,7 +56,8 @@ export function useDeepLink({ onOpenMedia, onNotify }: UseDeepLinkOptions): void
         }
 
         if (item) {
-          onOpenMedia(trailerUrl || '', item.title, item);
+          const finalTrailerUrl = trailerUrl || item.trailerUrl || '';
+          onOpenMedia(finalTrailerUrl, item.title, item);
           onNotify?.(`Título compartilhado carregado: "${item.title}"`, 'info');
 
           // Remove os parâmetros da URL sem recarregar a página

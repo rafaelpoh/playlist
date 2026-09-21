@@ -1,5 +1,5 @@
 import { FC, memo } from 'react';
-import { Sparkles, Film, Tv, Flame, Bookmark } from 'lucide-react';
+import { Sparkles, Film, Tv, Flame } from 'lucide-react';
 import type { MediaTypeFilter, MovieCategory, SerieCategory, AnimeCategory } from '@/types/media';
 import styles from './NavigationTabs.module.css';
 
@@ -12,7 +12,6 @@ export interface NavigationTabsProps {
   readonly onSerieCategoryChange: (category: SerieCategory) => void;
   readonly animeCategory: AnimeCategory;
   readonly onAnimeCategoryChange: (category: AnimeCategory) => void;
-  readonly watchlistCount?: number;
 }
 
 export const NavigationTabs: FC<NavigationTabsProps> = memo(({
@@ -24,7 +23,6 @@ export const NavigationTabs: FC<NavigationTabsProps> = memo(({
   onSerieCategoryChange,
   animeCategory,
   onAnimeCategoryChange,
-  watchlistCount = 0,
 }) => {
   return (
     <div className={styles.wrapper}>
@@ -64,18 +62,6 @@ export const NavigationTabs: FC<NavigationTabsProps> = memo(({
         >
           <Flame size={16} />
           <span>Animes</span>
-        </button>
-
-        <button
-          type="button"
-          className={`${styles.tabBtn} ${styles.tabWatchlist} ${activeTab === 'watchlist' ? styles.tabActiveWatchlist : ''}`}
-          onClick={() => onTabChange('watchlist')}
-        >
-          <Bookmark size={16} />
-          <span>Minha Lista</span>
-          {watchlistCount > 0 && (
-            <span className={styles.tabBadge}>{watchlistCount}</span>
-          )}
         </button>
       </nav>
 

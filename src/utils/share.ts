@@ -7,7 +7,9 @@ export function generateShareUrl(item: MediaItem): string {
   const origin = window.location.origin;
   const pathname = window.location.pathname;
   const url = new URL(origin + pathname);
-  url.searchParams.set('id', item.id);
+  // Remove prefixos como movie-, serie-, anime- para compatibilidade e URLs limpas
+  const cleanId = item.id.replace(/^(movie|serie|anime)-/, '');
+  url.searchParams.set('id', cleanId);
   url.searchParams.set('type', item.type);
   return url.toString();
 }

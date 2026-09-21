@@ -65,27 +65,6 @@
   box-shadow: 0 2px 10px var(--color-anime-glow);
 }
 
-.tabActiveWatchlist {
-  background-color: var(--color-brand-primary) !important;
-  color: #ffffff !important;
-  box-shadow: 0 2px 10px rgba(56, 189, 248, 0.4);
-}
-
-.tabBadge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 5px;
-  border-radius: var(--radius-full);
-  font-size: 11px;
-  font-weight: 700;
-  background-color: rgba(255, 255, 255, 0.2);
-  color: #ffffff;
-  margin-left: 4px;
-}
-
 /* Sub-filtros */
 .subFilterGroup {
   display: flex;

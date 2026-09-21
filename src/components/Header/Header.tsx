@@ -4,13 +4,21 @@ import styles from './Header.module.css';
 
 export interface HeaderProps {
   readonly onLogoClick?: () => void;
+  readonly navigationTabs?: ReactNode;
+  readonly searchBar?: ReactNode;
   readonly rightSlot?: ReactNode;
 }
 
-export const Header: FC<HeaderProps> = memo(({ onLogoClick, rightSlot }) => {
+export const Header: FC<HeaderProps> = memo(({
+  onLogoClick,
+  navigationTabs,
+  searchBar,
+  rightSlot,
+}) => {
   return (
     <header className={styles.header}>
       <div className={styles.container}>
+        {/* Logo / Marca da Aplicação */}
         <div 
           className={styles.brand} 
           onClick={onLogoClick} 
@@ -21,6 +29,7 @@ export const Header: FC<HeaderProps> = memo(({ onLogoClick, rightSlot }) => {
               onLogoClick?.();
             }
           }}
+          aria-label="Playlist Home"
         >
           <div className={styles.logoBadge}>
             <Play className={styles.playIcon} size={20} />
@@ -30,7 +39,27 @@ export const Header: FC<HeaderProps> = memo(({ onLogoClick, rightSlot }) => {
             <span className={styles.tagline}>Filmes • Séries • Animes</span>
           </div>
         </div>
-        {rightSlot && <div className={styles.rightSlot}>{rightSlot}</div>}
+
+        {/* Centro: Barra de Navegação e Campo de Busca antes do perfil */}
+        <div className={styles.centerActions}>
+          {navigationTabs && (
+            <div className={styles.navSlot}>
+              {navigationTabs}
+            </div>
+          )}
+          {searchBar && (
+            <div className={styles.searchSlot}>
+              {searchBar}
+            </div>
+          )}
+        </div>
+
+        {/* Direita: Menu do Perfil do Usuário */}
+        {rightSlot && (
+          <div className={styles.rightSlot}>
+            {rightSlot}
+          </div>
+        )}
       </div>
     </header>
   );

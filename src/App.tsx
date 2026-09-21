@@ -189,19 +189,7 @@ const PlaylistMain: FC = () => {
     <div className={styles.app}>
       <Header
         onLogoClick={handleResetFilters}
-        rightSlot={<UserMenu onOpenAuthModal={() => handleOpenAuthModal()} />}
-      />
-
-      {/* Hero & Painel de Controles */}
-      <section className={styles.controlPanel}>
-        <div className={styles.controlContent}>
-          <SearchBar
-            value={searchInput}
-            onChange={setSearchInput}
-            onClear={handleClearSearch}
-            placeholder={getSearchPlaceholder()}
-          />
-
+        navigationTabs={
           <NavigationTabs
             activeTab={activeTab}
             onTabChange={setActiveTab}
@@ -211,10 +199,24 @@ const PlaylistMain: FC = () => {
             onSerieCategoryChange={setSerieCategory}
             animeCategory={animeCategory}
             onAnimeCategoryChange={setAnimeCategory}
+          />
+        }
+        searchBar={
+          <SearchBar
+            value={searchInput}
+            onChange={setSearchInput}
+            onClear={handleClearSearch}
+            placeholder={getSearchPlaceholder()}
+          />
+        }
+        rightSlot={
+          <UserMenu
+            onOpenAuthModal={() => handleOpenAuthModal()}
+            onNavigateToWatchlist={() => setActiveTab('watchlist')}
             watchlistCount={watchlistCount}
           />
-        </div>
-      </section>
+        }
+      />
 
       {/* Conteúdo Principal */}
       <main className={styles.mainContent}>
