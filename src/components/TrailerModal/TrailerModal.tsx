@@ -52,7 +52,7 @@ export const TrailerModal: FC<TrailerModalProps> = memo(({
                 title={isSaved ? 'Remover da minha lista' : 'Salvar na lista'}
               >
                 <Bookmark size={16} fill={isSaved ? 'currentColor' : 'none'} />
-                <span>{isSaved ? 'Na sua lista' : 'Salvar'}</span>
+                <span className={styles.buttonText}>{isSaved ? 'Na sua lista' : 'Salvar'}</span>
               </button>
             )}
 
@@ -65,7 +65,7 @@ export const TrailerModal: FC<TrailerModalProps> = memo(({
                 title="Compartilhar título"
               >
                 <Share2 size={16} />
-                <span>Compartilhar</span>
+                <span className={styles.buttonText}>Compartilhar</span>
               </button>
             )}
             <button

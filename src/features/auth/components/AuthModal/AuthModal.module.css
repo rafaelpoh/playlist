@@ -24,14 +24,18 @@
 .modalContent {
   width: 100%;
   max-width: 440px;
+  max-height: calc(100vh - 32px);
+  max-height: calc(100dvh - 32px);
   background-color: var(--color-bg-surface);
   border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-lg);
-  overflow: hidden;
+  overflow-y: auto;
   box-shadow: var(--shadow-lg);
   display: flex;
   flex-direction: column;
   animation: scaleUp var(--transition-fast) ease-out;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border-medium) transparent;
 }
 
 @keyframes scaleUp {
@@ -62,7 +66,8 @@
 }
 
 .tabBtn {
-  padding: 4px 12px;
+  padding: 6px 14px;
+  min-height: 32px;
   border-radius: var(--radius-full);
   font-size: var(--font-size-xs);
   font-weight: 600;
@@ -76,7 +81,7 @@
 
 .tabActive {
   background-color: var(--color-brand-primary);
-  color: #ffffff !important;
+  color: var(--color-white) !important;
 }
 
 .closeButton {
@@ -85,13 +90,20 @@
   justify-content: center;
   color: var(--color-text-secondary);
   border-radius: var(--radius-full);
-  padding: 6px;
+  width: 36px;
+  height: 36px;
+  padding: 0;
   transition: all var(--transition-fast);
 }
 
 .closeButton:hover {
   color: var(--color-text-primary);
   background-color: rgba(255, 255, 255, 0.1);
+}
+
+.closeButton:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-brand-primary);
 }
 
 .modalBody {
@@ -132,10 +144,10 @@
   align-items: center;
   gap: var(--spacing-xs);
   padding: var(--spacing-xs) var(--spacing-sm);
-  background-color: rgba(239, 68, 68, 0.15);
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  background-color: var(--color-error-bg);
+  border: 1px solid var(--color-error-border);
   border-radius: var(--radius-sm);
-  color: #fca5a5;
+  color: var(--color-error-light);
   font-size: var(--font-size-xs);
 }
 
@@ -166,6 +178,7 @@
   position: relative;
   display: flex;
   align-items: center;
+  min-height: 42px;
   background-color: var(--color-bg-card);
   border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-sm);
@@ -175,7 +188,7 @@
 
 .inputWrapper:focus-within {
   border-color: var(--color-brand-primary);
-  box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+  box-shadow: 0 0 0 2px var(--color-brand-primary-alpha);
 }
 
 .inputIcon {
@@ -190,11 +203,12 @@
   border: none;
   outline: none;
   color: var(--color-text-primary);
-  font-size: var(--font-size-sm);
+  font-size: 16px; /* Previne zoom no iOS */
 }
 
 .input::placeholder {
   color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
 }
 
 .submitBtn {
@@ -203,8 +217,9 @@
   justify-content: center;
   gap: var(--spacing-xs);
   padding: var(--spacing-sm);
+  min-height: var(--touch-target-min);
   background: var(--gradient-brand);
-  color: #ffffff;
+  color: var(--color-white);
   border-radius: var(--radius-sm);
   font-size: var(--font-size-sm);
   font-weight: 700;
@@ -256,6 +271,7 @@
   justify-content: center;
   gap: var(--spacing-xs);
   padding: var(--spacing-xs) var(--spacing-sm);
+  min-height: var(--touch-target-min);
   background-color: var(--color-bg-card);
   border: 1px solid var(--color-border-subtle);
   color: var(--color-text-secondary);

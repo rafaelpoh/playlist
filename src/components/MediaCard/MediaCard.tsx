@@ -90,15 +90,27 @@ export const MediaCard: FC<MediaCardProps> = memo(({
           <div className={styles.headerActions}>
             {item.score !== null && item.score > 0 && (
               <span className={styles.badgeScore}>
-                <Star size={12} className={styles.starIcon} fill="currentColor" />
+                <Star size={11} className={styles.starIcon} fill="currentColor" />
                 <span>{score}</span>
               </span>
+            )}
+
+            {onToggleWatchlist && (
+              <button
+                type="button"
+                className={`${styles.actionBtn} ${isSaved ? styles.actionBtnSaved : ''}`}
+                onClick={handleBookmarkClick}
+                title={isSaved ? 'Remover da minha lista' : 'Salvar na lista'}
+                aria-label={isSaved ? 'Remover da minha lista' : 'Salvar na lista'}
+              >
+                <Bookmark size={13} fill={isSaved ? 'currentColor' : 'none'} />
+              </button>
             )}
 
             {onShare && (
               <button
                 type="button"
-                className={styles.shareBtn}
+                className={styles.actionBtn}
                 onClick={handleShareClick}
                 title="Compartilhar título"
                 aria-label="Compartilhar título"

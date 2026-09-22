@@ -40,19 +40,19 @@ export const Header: FC<HeaderProps> = memo(({
           </div>
         </div>
 
-        {/* Centro: Barra de Navegação e Campo de Busca antes do perfil */}
-        <div className={styles.centerActions}>
-          {navigationTabs && (
-            <div className={styles.navSlot}>
-              {navigationTabs}
-            </div>
-          )}
-          {searchBar && (
-            <div className={styles.searchSlot}>
-              {searchBar}
-            </div>
-          )}
-        </div>
+        {/* Campo de Busca Responsivo */}
+        {searchBar && (
+          <div className={styles.searchSlot}>
+            {searchBar}
+          </div>
+        )}
+
+        {/* Barra de Navegação de Categorias */}
+        {navigationTabs && (
+          <div className={styles.navSlot}>
+            {navigationTabs}
+          </div>
+        )}
 
         {/* Direita: Menu do Perfil do Usuário */}
         {rightSlot && (

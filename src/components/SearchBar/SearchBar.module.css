@@ -3,17 +3,18 @@
   display: flex;
   align-items: center;
   width: 100%;
-  max-width: 600px;
+  max-width: 100%;
+  min-height: 40px;
   background-color: var(--color-bg-card);
   border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-full);
-  padding: var(--spacing-xs) var(--spacing-md);
+  padding: 2px var(--spacing-md);
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .searchContainer:focus-within {
   border-color: var(--color-brand-primary);
-  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.15);
+  box-shadow: 0 0 0 3px var(--color-brand-primary-alpha);
 }
 
 .searchIcon {
@@ -28,12 +29,14 @@
   border: none;
   outline: none;
   color: var(--color-text-primary);
-  font-size: var(--font-size-sm);
+  font-size: 16px; /* Evita zoom automático do Safari no iOS */
   padding: var(--spacing-xs) 0;
+  min-width: 0;
 }
 
 .input::placeholder {
   color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
 }
 
 .clearButton {
@@ -42,17 +45,29 @@
   justify-content: center;
   color: var(--color-text-muted);
   border-radius: var(--radius-full);
-  padding: 4px;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  flex-shrink: 0;
   transition: color var(--transition-fast), background-color var(--transition-fast);
 }
 
 .clearButton:hover {
   color: var(--color-text-primary);
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: var(--color-border-subtle);
+}
+
+.clearButton:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-brand-primary);
 }
 
 @media (min-width: 768px) {
+  .searchContainer {
+    min-height: 42px;
+  }
+
   .input {
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-sm);
   }
 }

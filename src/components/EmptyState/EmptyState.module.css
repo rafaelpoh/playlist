@@ -36,8 +36,10 @@
 .button {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: var(--spacing-xs);
   padding: var(--spacing-xs) var(--spacing-md);
+  min-height: 40px;
   background-color: var(--color-bg-surface);
   border: 1px solid var(--color-border-medium);
   border-radius: var(--radius-sm);
@@ -49,6 +51,6 @@
 
 .button:hover {
   background-color: var(--color-brand-primary);
-  color: #ffffff;
+  color: var(--color-white);
   border-color: var(--color-brand-primary);
 }

@@ -50,6 +50,7 @@
   padding: var(--spacing-sm) var(--spacing-md);
   border-bottom: 1px solid var(--color-border-subtle);
   background-color: var(--color-bg-card);
+  gap: var(--spacing-xs);
 }
 
 .modalTitle {
@@ -60,13 +61,16 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  padding-right: var(--spacing-sm);
+  padding-right: var(--spacing-xs);
+  min-width: 0;
+  flex: 1;
 }
 
 .headerActions {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-xs);
+  flex-shrink: 0;
 }
 
 .modalBookmarkButton {
@@ -74,6 +78,7 @@
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
+  min-height: 36px;
   background-color: rgba(255, 255, 255, 0.08);
   border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-sm);
@@ -87,12 +92,12 @@
 .modalBookmarkButton:hover {
   background-color: rgba(255, 255, 255, 0.15);
   border-color: var(--color-brand-primary);
-  color: #ffffff;
+  color: var(--color-white);
   transform: translateY(-1px);
 }
 
 .modalBookmarkActive {
-  background-color: rgba(56, 189, 248, 0.2) !important;
+  background-color: var(--color-brand-primary-alpha) !important;
   border-color: var(--color-brand-primary) !important;
   color: var(--color-brand-primary) !important;
 }
@@ -102,6 +107,7 @@
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
+  min-height: 36px;
   background-color: rgba(255, 255, 255, 0.08);
   border: 1px solid var(--color-border-subtle);
   border-radius: var(--radius-sm);
@@ -113,10 +119,14 @@
 }
 
 .modalShareButton:hover {
-  background-color: rgba(56, 189, 248, 0.15);
+  background-color: var(--color-brand-primary-alpha);
   border-color: var(--color-brand-primary);
-  color: #ffffff;
+  color: var(--color-white);
   transform: translateY(-1px);
+}
+
+.buttonText {
+  display: inline;
 }
 
 .closeButton {
@@ -125,8 +135,11 @@
   justify-content: center;
   color: var(--color-text-secondary);
   border-radius: var(--radius-full);
-  padding: 6px;
+  width: 36px;
+  height: 36px;
+  padding: 0;
   transition: all var(--transition-fast);
+  flex-shrink: 0;
 }
 
 .closeButton:hover {
@@ -134,11 +147,16 @@
   background-color: rgba(255, 255, 255, 0.1);
 }
 
+.closeButton:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-brand-primary);
+}
+
 .videoContainer {
   position: relative;
   width: 100%;
   aspect-ratio: 16 / 9;
-  background-color: #000000;
+  background-color: var(--color-black);
 }
 
 .iframe {
@@ -162,4 +180,17 @@
 
 .alertIcon {
   color: var(--color-brand-primary);
+}
+
+@media (max-width: 600px) {
+  .buttonText {
+    display: none;
+  }
+
+  .modalBookmarkButton,
+  .modalShareButton {
+    padding: 6px 8px;
+    min-width: 36px;
+    justify-content: center;
+  }
 }

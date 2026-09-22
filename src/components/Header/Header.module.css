@@ -7,21 +7,26 @@
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--color-border-subtle);
-  padding: var(--spacing-sm) var(--spacing-md);
+  padding: max(var(--spacing-sm), env(safe-area-inset-top, 0px)) var(--spacing-md) var(--spacing-sm);
   transition: background-color var(--transition-normal);
 }
 
 .container {
   max-width: var(--max-width-content);
   margin: 0 auto;
-  display: flex;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    "brand right"
+    "search search"
+    "nav nav";
+  row-gap: var(--spacing-sm);
+  column-gap: var(--spacing-sm);
   align-items: center;
-  justify-content: space-between;
-  gap: var(--spacing-md);
-  flex-wrap: wrap;
 }
 
 .brand {
+  grid-area: brand;
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
@@ -32,6 +37,7 @@
   padding: var(--spacing-xs) 0;
   transition: opacity var(--transition-fast);
   flex-shrink: 0;
+  min-width: 0;
 }
 
 .brand:hover {
@@ -50,19 +56,20 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 16px rgba(56, 189, 248, 0.4);
+  box-shadow: 0 0 16px var(--color-border-glow);
   flex-shrink: 0;
 }
 
 .playIcon {
-  color: #ffffff;
-  fill: #ffffff;
+  color: var(--color-white);
+  fill: var(--color-white);
   margin-left: 2px;
 }
 
 .brandText {
   display: flex;
   flex-direction: column;
+  min-width: 0;
 }
 
 .title {
@@ -81,47 +88,65 @@
   color: var(--color-text-secondary);
   font-weight: 500;
   letter-spacing: 0.5px;
-}
-
-/* Área central: Navegação e Busca antes do perfil */
-.centerActions {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--spacing-md);
-  flex: 1;
-  order: 3;
-  width: 100%;
-  margin-top: var(--spacing-xs);
-}
-
-.navSlot {
-  display: flex;
-  align-items: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .searchSlot {
-  flex: 1;
-  max-width: 360px;
-  min-width: 200px;
+  grid-area: search;
+  width: 100%;
+}
+
+.navSlot {
+  grid-area: nav;
+  width: 100%;
+  display: flex;
+  justify-content: center;
 }
 
 .rightSlot {
+  grid-area: right;
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
-  order: 2;
   flex-shrink: 0;
+  justify-content: flex-end;
 }
 
-/* Em telas a partir de 1024px: Layout horizontal unificado em linha única */
+/* Telas médias (Tablets: 768px a 1023px) */
+@media (min-width: 768px) and (max-width: 1023px) {
+  .header {
+    padding: max(var(--spacing-sm), env(safe-area-inset-top, 0px)) var(--spacing-lg) var(--spacing-sm);
+  }
+
+  .container {
+    grid-template-columns: auto 1fr auto;
+    grid-template-areas:
+      "brand search right"
+      "nav nav nav";
+    column-gap: var(--spacing-md);
+    row-gap: var(--spacing-sm);
+  }
+
+  .searchSlot {
+    max-width: 420px;
+    margin: 0 auto;
+  }
+}
+
+/* Telas grandes (Desktop: a partir de 1024px) */
 @media (min-width: 1024px) {
   .header {
     padding: var(--spacing-sm) var(--spacing-xl);
   }
 
   .container {
-    flex-wrap: nowrap;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-md);
   }
 
   .logoBadge {
@@ -129,16 +154,18 @@
     height: 40px;
   }
 
-  .centerActions {
-    order: 2;
+  .navSlot {
     width: auto;
-    margin-top: 0;
-    margin-left: var(--spacing-md);
-    margin-right: var(--spacing-md);
-    justify-content: flex-end;
+    flex: 1;
+    justify-content: center;
+  }
+
+  .searchSlot {
+    width: auto;
+    flex: 0 1 340px;
   }
 
   .rightSlot {
-    order: 3;
+    width: auto;
   }
 }

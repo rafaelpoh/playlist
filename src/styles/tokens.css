@@ -36,9 +36,20 @@
   --color-anime-accent: #f97316;
   --color-anime-glow: rgba(249, 115, 22, 0.25);
 
-  /* Elementos de Destaque */
+  /* Elementos de Destaque e Status */
+  --color-white: #ffffff;
+  --color-black: #000000;
   --color-star-gold: #f59e0b;
   --color-error: #ef4444;
+  --color-error-light: #fca5a5;
+  --color-error-bg: rgba(239, 68, 68, 0.15);
+  --color-error-border: rgba(239, 68, 68, 0.3);
+  --color-brand-primary-alpha: rgba(56, 189, 248, 0.15);
+  --color-brand-primary-glow: rgba(56, 189, 248, 0.3);
+
+  /* Acessibilidade e Alvos de Toque */
+  --touch-target-min: 44px;
+  --touch-target-sm: 36px;
 
   /* Fontes */
   --font-family-body: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;

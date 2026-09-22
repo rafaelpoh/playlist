@@ -9,27 +9,32 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: var(--spacing-xs);
+  flex-wrap: wrap;
 }
 
 .titleWrapper {
   display: flex;
   align-items: center;
   gap: var(--spacing-sm);
+  min-width: 0;
 }
 
 .accentLine {
   width: 4px;
-  height: 24px;
+  height: clamp(20px, 3vw, 26px);
   background: var(--gradient-brand);
   border-radius: var(--radius-full);
+  flex-shrink: 0;
 }
 
 .title {
   font-family: var(--font-family-display);
-  font-size: var(--font-size-xl);
+  font-size: clamp(var(--font-size-lg), 2.5vw, var(--font-size-2xl));
   font-weight: 700;
   color: var(--color-text-primary);
   letter-spacing: -0.3px;
+  line-height: 1.2;
 }
 
 .countBadge {
@@ -40,6 +45,8 @@
   border-radius: var(--radius-full);
   border: 1px solid var(--color-border-subtle);
   font-weight: 500;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .grid {
@@ -48,7 +55,7 @@
   gap: var(--spacing-sm);
 }
 
-@media (min-width: 480px) {
+@media (min-width: 500px) {
   .grid {
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     gap: var(--spacing-md);
@@ -56,12 +63,15 @@
 }
 
 @media (min-width: 768px) {
-  .title {
-    font-size: var(--font-size-2xl);
-  }
-
   .grid {
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: var(--spacing-lg);
+  }
+}
+
+@media (min-width: 1280px) {
+  .grid {
+    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
     gap: var(--spacing-lg);
   }
 }
