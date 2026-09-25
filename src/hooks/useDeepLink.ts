@@ -96,5 +96,5 @@ export function useDeepLink({ onOpenMedia, onOpenSharedList, onNotify }: UseDeep
     };
 
     void resolveDeepLink();
-  }, [onOpenMedia, onNotify]);
+  }, [onOpenMedia, onOpenSharedList, onNotify]);
 }
