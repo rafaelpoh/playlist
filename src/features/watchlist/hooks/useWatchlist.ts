@@ -13,21 +13,18 @@ const BACKUP_STORAGE_KEY = '@playlist/watchlist_backup';
 function getLocalWatchlist(): MediaItem[] {
   try {
     const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
-    if (raw) {
+    if (raw !== null) {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        // Mantém backup sempre atualizado com a última versão válida
-        localStorage.setItem(BACKUP_STORAGE_KEY, raw);
+      if (Array.isArray(parsed)) {
         return parsed as MediaItem[];
       }
     }
 
-    // Mecanismo de recuperação: se a chave principal foi zerada, restaura do backup
+    // Mecanismo de recuperação apenas se a chave principal nunca foi definida ou foi acidentalmente removida
     const backupRaw = localStorage.getItem(BACKUP_STORAGE_KEY);
-    if (backupRaw) {
+    if (backupRaw !== null) {
       const backupParsed = JSON.parse(backupRaw);
-      if (Array.isArray(backupParsed) && backupParsed.length > 0) {
-        console.info('[Watchlist] Recuperados títulos a partir do backup resiliente!');
+      if (Array.isArray(backupParsed)) {
         localStorage.setItem(LOCAL_STORAGE_KEY, backupRaw);
         return backupParsed as MediaItem[];
       }
@@ -41,11 +38,10 @@ function getLocalWatchlist(): MediaItem[] {
 
 function setLocalWatchlist(items: ReadonlyArray<MediaItem>): void {
   try {
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(items));
-    // Nunca sobrescreve o backup com lista vazia para evitar perda catastrófica
-    if (items.length > 0) {
-      localStorage.setItem(BACKUP_STORAGE_KEY, JSON.stringify(items));
-    }
+    const serialized = JSON.stringify(items);
+    localStorage.setItem(LOCAL_STORAGE_KEY, serialized);
+    // Mantém o backup em sincronia para que exclusões intencionais não sejam revertidas
+    localStorage.setItem(BACKUP_STORAGE_KEY, serialized);
   } catch (error) {
     console.warn('[Watchlist] Falha ao persistir no localStorage:', error);
   }
@@ -66,7 +62,7 @@ export function useWatchlist() {
   }, [watchlist]);
 
   useEffect(() => {
-    // Se não estiver logado com conta real (ou for visitante), usa os dados locais
+    // 1. Visitante ou não autenticado: opera estritamente via local storage
     if (!user || user.uid.startsWith('guest-')) {
       const localItems = getLocalWatchlist();
       setWatchlist(localItems);
@@ -74,44 +70,43 @@ export function useWatchlist() {
       return;
     }
 
-    // Se estiver autenticado no Firebase, sincroniza de forma segura sem risco de apagar itens locais
+    // 2. Autenticado com Firebase: sincroniza com Firestore em tempo real
     setLoading(true);
-
-    const localItems = getLocalWatchlist();
+    let isInitialSnapshot = true;
 
     const unsubscribe = subscribeWatchlist(
       user.uid,
       (firestoreItems) => {
-        // Se o Firestore retornar 0 itens mas existirem itens locais válidos, PRESERVA os itens locais e força upload
-        if (firestoreItems.length === 0 && localItems.length > 0) {
-          console.info('[Watchlist] Firestore inicial vazio. Preservando títulos locais e enviando para a nuvem...');
-          setWatchlist(localItems);
-          setLocalWatchlist(localItems);
-          setLoading(false);
-          void Promise.allSettled(localItems.map((item) => saveToWatchlist(user.uid, item)));
-          return;
+        if (isInitialSnapshot) {
+          isInitialSnapshot = false;
+
+          // Se for o primeiro snapshot e o Firestore estiver vazio mas existirem itens locais prévios (ex: de visitante), migra-os
+          if (firestoreItems.length === 0) {
+            const initialLocalItems = getLocalWatchlist();
+            if (initialLocalItems.length > 0) {
+              console.info('[Watchlist] Primeira inicialização: migrando títulos locais para a nuvem...');
+              setWatchlist(initialLocalItems);
+              setLocalWatchlist(initialLocalItems);
+              setLoading(false);
+              void Promise.allSettled(
+                initialLocalItems.map((item) => saveToWatchlist(user.uid, item))
+              );
+              return;
+            }
+          }
         }
 
-        // Mescla itens locais com itens do Firestore sem duplicidade
-        const mergedMap = new Map<string, MediaItem>();
-        localItems.forEach((i) => mergedMap.set(i.id, i));
-        firestoreItems.forEach((i) => mergedMap.set(i.id, i));
-        const mergedList = Array.from(mergedMap.values());
-
-        // Se houver algum item local pendente que ainda não subiu para a nuvem, sincroniza
-        const firestoreIds = new Set(firestoreItems.map((i) => i.id));
-        const missingInCloud = localItems.filter((i) => !firestoreIds.has(i.id));
-        if (missingInCloud.length > 0) {
-          void Promise.allSettled(missingInCloud.map((item) => saveToWatchlist(user.uid, item)));
-        }
-
-        setWatchlist(mergedList);
+        // Para snapshots subsequentes ou quando o Firestore já contém dados:
+        // O Firestore é a única fonte da verdade para contas autenticadas.
+        // Itens excluídos pelo usuário permanecem excluídos e não são ressuscitados.
+        setWatchlist(firestoreItems);
+        setLocalWatchlist(firestoreItems);
         setLoading(false);
-        setLocalWatchlist(mergedList);
       },
       (error) => {
-        console.warn('[Watchlist] Falha de conexão com Firestore, utilizando backup local:', error);
-        setWatchlist(localItems);
+        console.warn('[Watchlist] Falha de conexão com Firestore, utilizando cache local:', error);
+        const cached = getLocalWatchlist();
+        setWatchlist(cached);
         setLoading(false);
       }
     );
@@ -131,9 +126,10 @@ export function useWatchlist() {
       const currentlySaved = savedIds.has(item.id);
       const nextSaved = !currentlySaved;
 
-      // 1. Atualiza estado em memória e localStorage imediatamente (resposta instantânea)
+      // 1. Atualização otimista imediata na memória e no localStorage
       setWatchlist((prev) => {
-        const updated = currentlySaved
+        const exists = prev.some((i) => i.id === item.id);
+        const updated = exists
           ? prev.filter((i) => i.id !== item.id)
           : [item, ...prev];
         setLocalWatchlist(updated);
@@ -150,6 +146,9 @@ export function useWatchlist() {
           }
         } catch (error) {
           console.error('[Watchlist] Erro ao sincronizar com Firestore:', error);
+          // Em caso de erro na nuvem, reverte para o estado local persistido
+          const cached = getLocalWatchlist();
+          setWatchlist(cached);
         }
       }
 
