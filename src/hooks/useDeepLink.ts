@@ -4,9 +4,15 @@ import { fetchSerieById, fetchSerieTrailer } from '@/features/series/api/seriesA
 import { fetchAnimeById } from '@/features/animes/api/animesApi';
 import type { MediaItem, MediaType } from '@/types/media';
 
+export interface SharedListPayload {
+  readonly userId?: string | null;
+  readonly itemsParam?: string | null;
+  readonly nameParam?: string | null;
+}
+
 interface UseDeepLinkOptions {
   readonly onOpenMedia: (trailerUrl: string, title: string, item: MediaItem) => void;
-  readonly onOpenSharedList?: (userId: string) => void;
+  readonly onOpenSharedList?: (payload: SharedListPayload) => void;
   readonly onNotify?: (message: string, type: 'info' | 'error' | 'success') => void;
 }
 
@@ -20,10 +26,17 @@ export function useDeepLink({ onOpenMedia, onOpenSharedList, onNotify }: UseDeep
 
     const params = new URLSearchParams(window.location.search);
 
-    // 1. Intercepta compartilhamento de lista completa (?list=USER_ID)
+    // 1. Intercepta compartilhamento de lista completa (?list=USER_ID ou ?items=... ou ?name=...)
     const listParam = params.get('list');
-    if (listParam && listParam.trim().length > 0) {
-      onOpenSharedList?.(listParam.trim());
+    const itemsParam = params.get('items');
+    const nameParam = params.get('name');
+
+    if (listParam || itemsParam) {
+      onOpenSharedList?.({
+        userId: listParam ? listParam.trim() : null,
+        itemsParam: itemsParam ? itemsParam.trim() : null,
+        nameParam: nameParam ? nameParam.trim() : null,
+      });
       return;
     }
 

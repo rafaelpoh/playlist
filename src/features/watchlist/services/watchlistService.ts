@@ -86,15 +86,19 @@ export function subscribeWatchlist(
   onError?: (error: Error) => void
 ): () => void {
   const colRef = collection(db, 'users', userId, 'watchlist');
-  const q = query(colRef, orderBy('addedAt', 'desc'));
 
+  // Não usamos orderBy('addedAt') no Firestore porque o Firestore omite silenciosamente documentos onde o campo falta
   return onSnapshot(
-    q,
+    colRef,
     (snapshot) => {
-      const items: MediaItem[] = [];
+      const items: Array<MediaItem & { addedAt?: number }> = [];
       snapshot.forEach((docSnap) => {
+        const raw = docSnap.data();
         try {
-          const parsed = WatchlistItemSchema.parse(docSnap.data());
+          const parsed = WatchlistItemSchema.parse({
+            id: raw.id || docSnap.id,
+            ...raw,
+          });
           items.push({
             id: parsed.id,
             title: parsed.title,
@@ -104,11 +108,27 @@ export function subscribeWatchlist(
             score: parsed.score ?? null,
             releaseYear: parsed.releaseYear ?? null,
             trailerUrl: parsed.trailerUrl ?? null,
+            addedAt: parsed.addedAt,
           });
         } catch (err) {
-          console.warn('[WatchlistService] Documento corrompido ignorado:', err);
+          // Fallback resiliente: nunca descarta um título válido por incompatibilidade de schema
+          console.warn('[WatchlistService] Schema falhou, aplicando fallback no documento:', docSnap.id, err);
+          items.push({
+            id: String(raw.id || docSnap.id),
+            title: String(raw.title || 'Título'),
+            overview: String(raw.overview || ''),
+            posterUrl: typeof raw.posterUrl === 'string' ? raw.posterUrl : null,
+            type: raw.type === 'serie' || raw.type === 'anime' ? raw.type : 'movie',
+            score: typeof raw.score === 'number' ? raw.score : null,
+            releaseYear: raw.releaseYear ? String(raw.releaseYear) : null,
+            trailerUrl: typeof raw.trailerUrl === 'string' ? raw.trailerUrl : null,
+            addedAt: typeof raw.addedAt === 'number' ? raw.addedAt : 0,
+          });
         }
       });
+
+      // Ordena por data adicionada decrescente em memória
+      items.sort((a, b) => (b.addedAt ?? 0) - (a.addedAt ?? 0));
       onUpdate(items);
     },
     (error) => {

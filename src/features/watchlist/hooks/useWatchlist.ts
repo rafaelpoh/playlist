@@ -8,11 +8,32 @@ import {
 import type { MediaItem } from '@/types/media';
 
 const LOCAL_STORAGE_KEY = '@playlist/watchlist';
+const BACKUP_STORAGE_KEY = '@playlist/watchlist_backup';
 
 function getLocalWatchlist(): MediaItem[] {
   try {
     const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as MediaItem[]) : [];
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        // Mantém backup sempre atualizado com a última versão válida
+        localStorage.setItem(BACKUP_STORAGE_KEY, raw);
+        return parsed as MediaItem[];
+      }
+    }
+
+    // Mecanismo de recuperação: se a chave principal foi zerada, restaura do backup
+    const backupRaw = localStorage.getItem(BACKUP_STORAGE_KEY);
+    if (backupRaw) {
+      const backupParsed = JSON.parse(backupRaw);
+      if (Array.isArray(backupParsed) && backupParsed.length > 0) {
+        console.info('[Watchlist] Recuperados títulos a partir do backup resiliente!');
+        localStorage.setItem(LOCAL_STORAGE_KEY, backupRaw);
+        return backupParsed as MediaItem[];
+      }
+    }
+
+    return [];
   } catch {
     return [];
   }
@@ -21,6 +42,10 @@ function getLocalWatchlist(): MediaItem[] {
 function setLocalWatchlist(items: ReadonlyArray<MediaItem>): void {
   try {
     localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(items));
+    // Nunca sobrescreve o backup com lista vazia para evitar perda catastrófica
+    if (items.length > 0) {
+      localStorage.setItem(BACKUP_STORAGE_KEY, JSON.stringify(items));
+    }
   } catch (error) {
     console.warn('[Watchlist] Falha ao persistir no localStorage:', error);
   }
@@ -49,26 +74,44 @@ export function useWatchlist() {
       return;
     }
 
-    // Se estiver autenticado no Firebase, migra itens locais se houver e sincroniza em tempo real com Firestore
+    // Se estiver autenticado no Firebase, sincroniza de forma segura sem risco de apagar itens locais
     setLoading(true);
 
     const localItems = getLocalWatchlist();
-    if (localItems.length > 0) {
-      // Faz upload de itens que foram salvos antes do login para a nuvem
-      void Promise.allSettled(localItems.map((item) => saveToWatchlist(user.uid, item))).then(() => {
-        console.info('[Watchlist] Itens locais sincronizados com o Firestore com sucesso.');
-      });
-    }
 
     const unsubscribe = subscribeWatchlist(
       user.uid,
-      (items) => {
-        setWatchlist(items);
+      (firestoreItems) => {
+        // Se o Firestore retornar 0 itens mas existirem itens locais válidos, PRESERVA os itens locais e força upload
+        if (firestoreItems.length === 0 && localItems.length > 0) {
+          console.info('[Watchlist] Firestore inicial vazio. Preservando títulos locais e enviando para a nuvem...');
+          setWatchlist(localItems);
+          setLocalWatchlist(localItems);
+          setLoading(false);
+          void Promise.allSettled(localItems.map((item) => saveToWatchlist(user.uid, item)));
+          return;
+        }
+
+        // Mescla itens locais com itens do Firestore sem duplicidade
+        const mergedMap = new Map<string, MediaItem>();
+        localItems.forEach((i) => mergedMap.set(i.id, i));
+        firestoreItems.forEach((i) => mergedMap.set(i.id, i));
+        const mergedList = Array.from(mergedMap.values());
+
+        // Se houver algum item local pendente que ainda não subiu para a nuvem, sincroniza
+        const firestoreIds = new Set(firestoreItems.map((i) => i.id));
+        const missingInCloud = localItems.filter((i) => !firestoreIds.has(i.id));
+        if (missingInCloud.length > 0) {
+          void Promise.allSettled(missingInCloud.map((item) => saveToWatchlist(user.uid, item)));
+        }
+
+        setWatchlist(mergedList);
         setLoading(false);
-        // Mantém backup local sincronizado
-        setLocalWatchlist(items);
+        setLocalWatchlist(mergedList);
       },
-      () => {
+      (error) => {
+        console.warn('[Watchlist] Falha de conexão com Firestore, utilizando backup local:', error);
+        setWatchlist(localItems);
         setLoading(false);
       }
     );

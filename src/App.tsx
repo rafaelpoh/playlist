@@ -42,12 +42,19 @@ const PlaylistMain: FC = () => {
 
   // Estado para visualização de lista compartilhada por outro usuário
   const [sharedListUserId, setSharedListUserId] = useState<string | null>(null);
+  const [sharedListItemsParam, setSharedListItemsParam] = useState<string | null>(null);
+  const [sharedListNameParam, setSharedListNameParam] = useState<string | null>(null);
+
   const {
     items: sharedItems,
     ownerProfile,
     loading: sharedLoading,
     error: sharedError,
-  } = useSharedWatchlist(sharedListUserId);
+  } = useSharedWatchlist({
+    sharedUserId: sharedListUserId,
+    itemsParam: sharedListItemsParam,
+    nameParam: sharedListNameParam,
+  });
 
   // Features hooks
   const {
@@ -88,18 +95,20 @@ const PlaylistMain: FC = () => {
   // Modal hook
   const { isOpen, trailerInfo, openTrailer, closeTrailer } = useTrailerModal();
 
-  // Intercepta títulos individuais (?id=...&type=...) ou listas completas (?list=USER_ID)
+  // Intercepta títulos individuais (?id=...&type=...) ou listas completas (?list=USER_ID ou ?items=...)
   useDeepLink({
     onOpenMedia: (trailerUrl, title, item) => {
       openTrailer(trailerUrl, title, item);
     },
-    onOpenSharedList: (userId) => {
-      // Se o link for do próprio usuário logado, abre diretamente sua lista com permissões completas
-      if (user && user.uid === userId) {
+    onOpenSharedList: ({ userId, itemsParam, nameParam }) => {
+      // Se o link for do próprio usuário logado e não for lista com tokens externos, abre diretamente sua lista com permissões completas
+      if (user && userId && user.uid === userId && !itemsParam) {
         setActiveTab('watchlist');
         showToast('Você abriu a sua própria lista! 🍿', 'info');
       } else {
-        setSharedListUserId(userId);
+        setSharedListUserId(userId ?? null);
+        setSharedListItemsParam(itemsParam ?? null);
+        setSharedListNameParam(nameParam ?? null);
         setActiveTab('shared-watchlist');
         showToast('Carregando lista compartilhada...', 'info');
       }
@@ -111,12 +120,14 @@ const PlaylistMain: FC = () => {
 
   // Se o usuário logar/carregar e constatar que é o dono da lista compartilhada aberta, redireciona
   useEffect(() => {
-    if (user && sharedListUserId && user.uid === sharedListUserId) {
+    if (user && sharedListUserId && user.uid === sharedListUserId && !sharedListItemsParam) {
       setSharedListUserId(null);
+      setSharedListItemsParam(null);
+      setSharedListNameParam(null);
       setActiveTab('watchlist');
       showToast('Você abriu a sua própria lista.', 'info');
     }
-  }, [user, sharedListUserId, showToast]);
+  }, [user, sharedListUserId, sharedListItemsParam, showToast]);
 
   const handleShare = useCallback(async (item: MediaItem) => {
     const result = await shareMediaItem(item);
@@ -175,13 +186,11 @@ const PlaylistMain: FC = () => {
   }, [toggleWatchlist, showToast]);
 
   const handleShareMyWatchlist = useCallback(async () => {
-    if (!user || user.uid.startsWith('guest-')) {
-      showToast('Faça login para salvar sua lista na nuvem e poder compartilhá-la com amigos!', 'info');
-      handleOpenAuthModal('Faça login para compartilhar sua lista completa!');
-      return;
-    }
+    // Permite compartilhar os títulos da lista instantaneamente mesmo em modo convidado ou com nuvem pendente
+    const targetUserId = user && !user.uid.startsWith('guest-') ? user.uid : 'guest';
+    const targetName = user?.displayName || 'Cineasta';
 
-    const result = await shareWatchlist(user.uid, user.displayName);
+    const result = await shareWatchlist(targetUserId, targetName, watchlist);
     if (result.success) {
       if (result.method === 'share') {
         showToast('Lista compartilhada com sucesso! 🚀', 'success');
@@ -191,11 +200,12 @@ const PlaylistMain: FC = () => {
     } else {
       showToast('Não foi possível copiar o link. Verifique as permissões.', 'error');
     }
-  }, [user, showToast, handleOpenAuthModal]);
+  }, [user, watchlist, showToast]);
 
   const handleShareSharedList = useCallback(async () => {
-    if (!sharedListUserId) return;
-    const result = await shareWatchlist(sharedListUserId, ownerProfile?.displayName);
+    const targetUserId = sharedListUserId || 'shared';
+    const targetName = ownerProfile?.displayName || sharedListNameParam || 'Cineasta';
+    const result = await shareWatchlist(targetUserId, targetName, sharedItems);
     if (result.success) {
       if (result.method === 'share') {
         showToast('Link da lista compartilhado com sucesso! 🚀', 'success');
@@ -205,7 +215,7 @@ const PlaylistMain: FC = () => {
     } else {
       showToast('Não foi possível copiar o link. Verifique as permissões.', 'error');
     }
-  }, [sharedListUserId, ownerProfile, showToast]);
+  }, [sharedListUserId, ownerProfile, sharedListNameParam, sharedItems, showToast]);
 
   const handleClearSearch = useCallback(() => {
     setSearchInput('');
@@ -214,6 +224,8 @@ const PlaylistMain: FC = () => {
   const handleResetFilters = useCallback(() => {
     setSearchInput('');
     setSharedListUserId(null);
+    setSharedListItemsParam(null);
+    setSharedListNameParam(null);
     setActiveTab('all');
     refreshMovies();
     refreshSeries();
@@ -259,7 +271,7 @@ const PlaylistMain: FC = () => {
       case 'watchlist':
         return 'Buscar na minha lista...';
       case 'shared-watchlist':
-        return `Buscar na lista de ${ownerProfile?.displayName || 'Cineasta'}...`;
+        return `Buscar na lista de ${ownerProfile?.displayName || sharedListNameParam || 'Cineasta'}...`;
       default:
         return 'Buscar filmes, séries e animes...';
     }
@@ -274,6 +286,8 @@ const PlaylistMain: FC = () => {
             activeTab={activeTab}
             onTabChange={(tab) => {
               setSharedListUserId(null);
+              setSharedListItemsParam(null);
+              setSharedListNameParam(null);
               setActiveTab(tab);
             }}
             movieCategory={movieCategory}
@@ -297,6 +311,8 @@ const PlaylistMain: FC = () => {
             onOpenAuthModal={() => handleOpenAuthModal()}
             onNavigateToWatchlist={() => {
               setSharedListUserId(null);
+              setSharedListItemsParam(null);
+              setSharedListNameParam(null);
               setActiveTab('watchlist');
             }}
             watchlistCount={watchlistCount}
@@ -381,14 +397,18 @@ const PlaylistMain: FC = () => {
         {activeTab === 'shared-watchlist' && (
           <div className={styles.sharedListContainer}>
             <SharedWatchlistBanner
-              ownerName={ownerProfile?.displayName ?? null}
+              ownerName={ownerProfile?.displayName || sharedListNameParam || null}
               onShareLink={handleShareSharedList}
               onGoToMyWatchlist={() => {
                 setSharedListUserId(null);
+                setSharedListItemsParam(null);
+                setSharedListNameParam(null);
                 setActiveTab('watchlist');
               }}
               onExploreCatalog={() => {
                 setSharedListUserId(null);
+                setSharedListItemsParam(null);
+                setSharedListNameParam(null);
                 setActiveTab('all');
               }}
               itemCount={sharedItems.length}
@@ -400,6 +420,8 @@ const PlaylistMain: FC = () => {
                 resetLabel="Explorar Catálogo"
                 onReset={() => {
                   setSharedListUserId(null);
+                  setSharedListItemsParam(null);
+                  setSharedListNameParam(null);
                   setActiveTab('all');
                 }}
               />
@@ -408,17 +430,19 @@ const PlaylistMain: FC = () => {
                 message={
                   debouncedSearch.trim()
                     ? `Nenhum título na lista compartilhada corresponde a "${debouncedSearch}".`
-                    : `A lista de ${ownerProfile?.displayName || 'este usuário'} está vazia no momento.`
+                    : `A lista de ${ownerProfile?.displayName || sharedListNameParam || 'este usuário'} está vazia no momento.`
                 }
                 resetLabel="Explorar Catálogo"
                 onReset={() => {
                   setSharedListUserId(null);
+                  setSharedListItemsParam(null);
+                  setSharedListNameParam(null);
                   setActiveTab('all');
                 }}
               />
             ) : (
               <MediaGrid
-                title={`Títulos Salvos por ${ownerProfile?.displayName || 'Cineasta'}`}
+                title={`Títulos Salvos por ${ownerProfile?.displayName || sharedListNameParam || 'Cineasta'}`}
                 items={filteredSharedList}
                 loading={sharedLoading}
                 onPlayTrailer={handlePlayTrailer}

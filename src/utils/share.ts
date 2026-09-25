@@ -90,20 +90,50 @@ export async function shareMediaItem(item: MediaItem): Promise<ShareResult> {
 
 /**
  * Gera a URL compartilhável para uma lista completa (Watchlist).
+ * Suporta inclusão de ID de nuvem (Firestore) e tokens compactados de itens (fallback resiliente).
  */
-export function generateWatchlistShareUrl(userId: string): string {
+export function generateWatchlistShareUrl(
+  userId: string,
+  ownerName?: string | null,
+  items?: ReadonlyArray<MediaItem>
+): string {
   const origin = window.location.origin;
   const pathname = window.location.pathname;
   const url = new URL(origin + pathname);
-  url.searchParams.set('list', userId);
+
+  if (userId && !userId.startsWith('guest-')) {
+    url.searchParams.set('list', userId);
+  }
+
+  if (ownerName && ownerName.trim().length > 0) {
+    url.searchParams.set('name', ownerName.trim());
+  }
+
+  if (items && items.length > 0) {
+    // Codifica formato ultra-compacto: "m:550,s:1399,a:21"
+    const compactTokens = items
+      .map((i) => {
+        const typePrefix = i.type === 'serie' ? 's' : i.type === 'anime' ? 'a' : 'm';
+        const cleanId = i.id.replace(/^(movie|serie|anime)-/, '');
+        return `${typePrefix}:${cleanId}`;
+      })
+      .join(',');
+
+    url.searchParams.set('items', compactTokens);
+  }
+
   return url.toString();
 }
 
 /**
  * Compartilha o link de uma lista completa via Web Share API ou área de transferência.
  */
-export async function shareWatchlist(userId: string, ownerName?: string | null): Promise<ShareResult> {
-  const shareUrl = generateWatchlistShareUrl(userId);
+export async function shareWatchlist(
+  userId: string,
+  ownerName?: string | null,
+  items?: ReadonlyArray<MediaItem>
+): Promise<ShareResult> {
+  const shareUrl = generateWatchlistShareUrl(userId, ownerName, items);
   const nameLabel = ownerName ? `de ${ownerName}` : 'completa';
   return executeShare({
     title: `Lista ${nameLabel} | Playlist`,
