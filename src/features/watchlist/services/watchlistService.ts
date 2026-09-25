@@ -3,6 +3,7 @@ import {
   doc,
   setDoc,
   deleteDoc,
+  getDoc,
   query,
   orderBy,
   onSnapshot,
@@ -10,6 +11,51 @@ import {
 import { db } from '@/services/firebase';
 import { WatchlistItemSchema, type WatchlistDocument } from '../schemas/watchlistSchema';
 import type { MediaItem } from '@/types/media';
+
+export interface UserProfileData {
+  readonly displayName: string | null;
+  readonly photoURL?: string | null;
+}
+
+/**
+ * Salva metadados públicos do perfil para que outros possam identificar a lista compartilhada.
+ */
+export async function saveUserProfile(
+  userId: string,
+  profile: { displayName?: string | null; photoURL?: string | null }
+): Promise<void> {
+  const userRef = doc(db, 'users', userId);
+  await setDoc(
+    userRef,
+    {
+      displayName: profile.displayName || 'Cineasta',
+      photoURL: profile.photoURL || null,
+      updatedAt: Date.now(),
+    },
+    { merge: true }
+  );
+}
+
+/**
+ * Busca o perfil público de um usuário para exibir o autor da lista compartilhada.
+ */
+export async function getUserProfile(userId: string): Promise<UserProfileData | null> {
+  try {
+    const userRef = doc(db, 'users', userId);
+    const snap = await getDoc(userRef);
+    if (snap.exists()) {
+      const data = snap.data();
+      return {
+        displayName: typeof data.displayName === 'string' ? data.displayName : null,
+        photoURL: typeof data.photoURL === 'string' ? data.photoURL : null,
+      };
+    }
+    return null;
+  } catch (err) {
+    console.warn('[WatchlistService] Falha ao recuperar perfil público:', err);
+    return null;
+  }
+}
 
 export async function saveToWatchlist(userId: string, item: MediaItem): Promise<void> {
   const docRef = doc(db, 'users', userId, 'watchlist', item.id);

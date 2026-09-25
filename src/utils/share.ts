@@ -21,42 +21,23 @@ export interface ShareResult {
 }
 
 /**
- * Compartilha o título via Web Share API se disponível, ou copia o link para a área de transferência.
+ * Função utilitária segura para copiar textos para a área de transferência com fallback resiliente.
  */
-export async function shareMediaItem(item: MediaItem): Promise<ShareResult> {
-  const shareUrl = generateShareUrl(item);
-  const typeLabel = item.type === 'movie' ? 'filme' : item.type === 'serie' ? 'série' : 'anime';
-  const shareData = {
-    title: `${item.title} | Playlist`,
-    text: `Confira o ${typeLabel} "${item.title}" no Playlist!`,
-    url: shareUrl,
-  };
-
-  if (typeof navigator !== 'undefined' && navigator.share && navigator.canShare && navigator.canShare(shareData)) {
-    try {
-      await navigator.share(shareData);
-      return { success: true, method: 'share', url: shareUrl };
-    } catch (error: unknown) {
-      if (error instanceof Error && error.name === 'AbortError') {
-        return { success: false, method: 'share', url: shareUrl };
-      }
-    }
-  }
-
-  // Fallback 1: Clipboard API moderna
+async function copyToClipboard(text: string): Promise<boolean> {
+  // 1. Clipboard API moderna
   try {
     if (typeof navigator !== 'undefined' && navigator.clipboard?.writeText) {
-      await navigator.clipboard.writeText(shareUrl);
-      return { success: true, method: 'clipboard', url: shareUrl };
+      await navigator.clipboard.writeText(text);
+      return true;
     }
   } catch (clipboardError) {
     console.warn('[Share] Falha na API navigator.clipboard, tentando fallback:', clipboardError);
   }
 
-  // Fallback 2: ExecCommand legado para compatibilidade máxima e ambientes headless
+  // 2. ExecCommand legado para compatibilidade máxima e testes
   try {
     const textArea = document.createElement('textarea');
-    textArea.value = shareUrl;
+    textArea.value = text;
     textArea.style.position = 'fixed';
     textArea.style.opacity = '0';
     textArea.style.left = '-9999px';
@@ -66,11 +47,68 @@ export async function shareMediaItem(item: MediaItem): Promise<ShareResult> {
     const successful = document.execCommand('copy');
     document.body.removeChild(textArea);
     if (successful) {
-      return { success: true, method: 'clipboard', url: shareUrl };
+      return true;
     }
   } catch (execError) {
     console.warn('[Share] Falha no fallback execCommand:', execError);
   }
 
-  return { success: false, method: 'clipboard', url: shareUrl };
+  return false;
 }
+
+/**
+ * Executa o compartilhamento via Web Share API se suportado ou copia para a área de transferência.
+ */
+async function executeShare(data: { title: string; text: string; url: string }): Promise<ShareResult> {
+  if (typeof navigator !== 'undefined' && navigator.share && navigator.canShare && navigator.canShare(data)) {
+    try {
+      await navigator.share(data);
+      return { success: true, method: 'share', url: data.url };
+    } catch (error: unknown) {
+      if (error instanceof Error && error.name === 'AbortError') {
+        return { success: false, method: 'share', url: data.url };
+      }
+    }
+  }
+
+  const copied = await copyToClipboard(data.url);
+  return { success: copied, method: 'clipboard', url: data.url };
+}
+
+/**
+ * Compartilha o título via Web Share API se disponível, ou copia o link para a área de transferência.
+ */
+export async function shareMediaItem(item: MediaItem): Promise<ShareResult> {
+  const shareUrl = generateShareUrl(item);
+  const typeLabel = item.type === 'movie' ? 'filme' : item.type === 'serie' ? 'série' : 'anime';
+  return executeShare({
+    title: `${item.title} | Playlist`,
+    text: `Confira o ${typeLabel} "${item.title}" no Playlist!`,
+    url: shareUrl,
+  });
+}
+
+/**
+ * Gera a URL compartilhável para uma lista completa (Watchlist).
+ */
+export function generateWatchlistShareUrl(userId: string): string {
+  const origin = window.location.origin;
+  const pathname = window.location.pathname;
+  const url = new URL(origin + pathname);
+  url.searchParams.set('list', userId);
+  return url.toString();
+}
+
+/**
+ * Compartilha o link de uma lista completa via Web Share API ou área de transferência.
+ */
+export async function shareWatchlist(userId: string, ownerName?: string | null): Promise<ShareResult> {
+  const shareUrl = generateWatchlistShareUrl(userId);
+  const nameLabel = ownerName ? `de ${ownerName}` : 'completa';
+  return executeShare({
+    title: `Lista ${nameLabel} | Playlist`,
+    text: `Confira a lista de títulos ${nameLabel} no Playlist! Acesse agora:`,
+    url: shareUrl,
+  });
+}
+

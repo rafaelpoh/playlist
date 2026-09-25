@@ -1,4 +1,4 @@
-import { FC, memo } from 'react';
+import { FC, memo, ReactNode } from 'react';
 import type { MediaItem } from '@/types/media';
 import { MediaCard } from '../MediaCard/MediaCard';
 import { SkeletonCard } from '../SkeletonCard/SkeletonCard';
@@ -14,6 +14,7 @@ export interface MediaGridProps {
   readonly isSaved?: (mediaId: string) => boolean;
   readonly onToggleWatchlist?: (item: MediaItem) => void;
   readonly onShare?: (item: MediaItem) => void;
+  readonly actions?: ReactNode;
 }
 
 const SKELETON_COUNT = 10;
@@ -28,6 +29,7 @@ export const MediaGrid: FC<MediaGridProps> = memo(({
   isSaved,
   onToggleWatchlist,
   onShare,
+  actions,
 }) => {
   return (
     <section className={styles.section} aria-label={title}>
@@ -36,9 +38,12 @@ export const MediaGrid: FC<MediaGridProps> = memo(({
           <div className={styles.accentLine} />
           <h2 className={styles.title}>{title}</h2>
         </div>
-        {count !== undefined && !loading && (
-          <span className={styles.countBadge}>{count} títulos</span>
-        )}
+        <div className={styles.headerRight}>
+          {actions}
+          {count !== undefined && !loading && (
+            <span className={styles.countBadge}>{count} títulos</span>
+          )}
+        </div>
       </div>
 
       <div className={styles.grid}>

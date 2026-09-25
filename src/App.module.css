@@ -24,6 +24,38 @@
   gap: var(--spacing-2xl);
 }
 
+.sharedListContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xl);
+}
+
+.shareListButton {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  background: var(--gradient-brand);
+  color: var(--color-white);
+  padding: 6px var(--spacing-md);
+  border-radius: var(--radius-full);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  min-height: 32px;
+  cursor: pointer;
+  transition: transform var(--transition-fast), filter var(--transition-fast);
+  box-shadow: var(--shadow-sm);
+  white-space: nowrap;
+}
+
+.shareListButton:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.1);
+}
+
+.shareListButton:active {
+  transform: translateY(0);
+}
+
 .errorBanner {
   display: flex;
   align-items: center;

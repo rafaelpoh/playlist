@@ -11,6 +11,7 @@ import {
   User as FirebaseUser,
 } from 'firebase/auth';
 import { auth } from '@/services/firebase';
+import { saveUserProfile } from '@/features/watchlist/services/watchlistService';
 import type { AuthUser, LoginCredentials, RegisterCredentials } from '../types';
 
 export interface AuthContextType {
@@ -70,6 +71,13 @@ export const AuthProvider: FC<{ children: ReactNode }> = ({ children }) => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
         setUser(mapFirebaseUser(firebaseUser));
+        // Sincroniza metadados públicos no Firestore para que links de compartilhamento exibam o nome do autor
+        if (!firebaseUser.isAnonymous) {
+          void saveUserProfile(firebaseUser.uid, {
+            displayName: firebaseUser.displayName,
+            photoURL: firebaseUser.photoURL,
+          });
+        }
       } else {
         setUser(null);
       }

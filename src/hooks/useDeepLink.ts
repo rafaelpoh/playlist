@@ -6,10 +6,11 @@ import type { MediaItem, MediaType } from '@/types/media';
 
 interface UseDeepLinkOptions {
   readonly onOpenMedia: (trailerUrl: string, title: string, item: MediaItem) => void;
+  readonly onOpenSharedList?: (userId: string) => void;
   readonly onNotify?: (message: string, type: 'info' | 'error' | 'success') => void;
 }
 
-export function useDeepLink({ onOpenMedia, onNotify }: UseDeepLinkOptions): void {
+export function useDeepLink({ onOpenMedia, onOpenSharedList, onNotify }: UseDeepLinkOptions): void {
   const hasProcessedRef = useRef<boolean>(false);
 
   useEffect(() => {
@@ -18,6 +19,15 @@ export function useDeepLink({ onOpenMedia, onNotify }: UseDeepLinkOptions): void
     hasProcessedRef.current = true;
 
     const params = new URLSearchParams(window.location.search);
+
+    // 1. Intercepta compartilhamento de lista completa (?list=USER_ID)
+    const listParam = params.get('list');
+    if (listParam && listParam.trim().length > 0) {
+      onOpenSharedList?.(listParam.trim());
+      return;
+    }
+
+    // 2. Intercepta compartilhamento de título individual (?id=...&type=...)
     const idParam = params.get('id');
     const typeParam = params.get('type') as MediaType | null;
 

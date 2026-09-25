@@ -165,15 +165,26 @@ Para garantir segurança total, a aplicação adota o padrão **BFF (Backend For
 
 ## 🔒 Segurança & Regras do Firestore
 
-O projeto utiliza regras estritas em `firestore.rules`, garantindo que cada usuário acesse exclusivamente seus próprios títulos na lista:
+O projeto utiliza regras estritas em `firestore.rules`, garantindo que listas compartilhadas sejam públicas para leitura via link, enquanto a adição, alteração e exclusão de títulos permanecem restritas exclusivamente ao proprietário autenticado da lista:
 
 ```rules
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Perfil público do usuário para exibir nome na lista compartilhada
+    match /users/{userId} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    // Títulos da Watchlist
     match /users/{userId}/watchlist/{mediaId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      // Qualquer pessoa com o link pode ler a lista compartilhada
+      allow read: if true;
+      // Apenas o dono autenticado pode adicionar, modificar ou remover itens
+      allow write: if request.auth != null && request.auth.uid == userId;
     }
   }
 }
 ```
+

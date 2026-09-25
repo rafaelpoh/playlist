@@ -1,6 +1,6 @@
 export type MediaType = 'movie' | 'serie' | 'anime';
 
-export type MediaTypeFilter = 'all' | 'movie' | 'serie' | 'anime' | 'watchlist';
+export type MediaTypeFilter = 'all' | 'movie' | 'serie' | 'anime' | 'watchlist' | 'shared-watchlist';
 
 export type MovieCategory = 'now_playing' | 'upcoming';
 export type SerieCategory = 'on_the_air' | 'popular';
